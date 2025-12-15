@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - NBKRIST</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                },
+                extend: {
+                    colors: {
+                        iosBlue: '#007AFF',
+                        iosDark: '#000000',
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.07)',
+                        'glow': '0 0 40px -10px rgba(0, 122, 255, 0.3)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'float': 'float 10s infinite ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-15px)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Hide Scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* Premium Glass Effect */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+        }
+
+        /* Input Fields */
+        .form-input {
+            width: 100%; padding: 1rem 1rem 1rem 3rem; border-radius: 1rem;
+            border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem; font-weight: 500; color: #1f2937;
+        }
+        .form-input:focus {
+            outline: none; border-color: #007AFF; background: white;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15); transform: translateY(-1px);
+        }
+
+        /* Button Animation */
+        .btn-primary {
+            background: #007AFF; color: white; font-weight: 700;
+            border-radius: 1rem; padding: 1rem; width: 100%;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+        .btn-primary:active { transform: scale(0.96); }
+        .btn-primary:hover { box-shadow: 0 10px 25px -5px rgba(0, 122, 255, 0.5); background: #0062cc; }
+
+        /* Dynamic Background */
+        .mesh-bg { position: fixed; inset: 0; z-index: -1; background: #F2F2F7; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; }
+        .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(0,122,255,0.2) 0%, transparent 70%); animation: float 12s infinite ease-in-out; }
+        .orb-2 { bottom: -10%; right: -10%; width: 70vw; height: 70vw; background: radial-gradient(circle, rgba(94,92,230,0.15) 0%, transparent 70%); animation: float 16s infinite ease-in-out reverse; }
+    </style>
+</head>
+<body class="text-gray-900 min-h-screen flex items-center justify-center p-4" x-data="{ mode: 'login' }">
+
+    <div class="mesh-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+    <div class="w-full max-w-[1100px] h-[700px] bg-white/60 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl border border-white/60 overflow-hidden flex relative animate-fade-in">
+        
+        <div class="hidden lg:flex w-5/12 relative overflow-hidden flex-col justify-between p-10 text-white bg-black">
+            <img src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1000&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay hover:scale-105 transition-transform duration-[20s]">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80"></div>
+
+            <div class="relative z-10">
+                <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg mb-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-10 h-10 object-contain brightness-0 invert">
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight leading-tight">Student hostel <br>Portal</h1>
+                <p class="text-white/80 mt-2 font-medium text-sm">Manage your hostel life seamlessly.</p>
+            </div>
+            
+            
+        </div>
+
+        <div class="w-full lg:w-7/12 relative p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+            
+            <div class="lg:hidden absolute top-8 left-8 flex items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-10 h-10">
+                <span class="font-bold text-xl tracking-tight">NBKRIST</span>
+            </div>
+
+            <div x-show="mode === 'login'" 
+                 x-transition:enter="transition ease-out duration-500"
+                 x-transition:enter-start="opacity-0 translate-x-8"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 class="w-full max-w-md mx-auto">
+                
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                <p class="text-gray-500 mb-10">Please sign in to continue.</p>
+
+                <form id="login-form" class="space-y-5">
+                    <div class="relative group">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input type="email" id="login-email" class="form-input" placeholder="Email Address" required>
+                    </div>
+                    
+                    <div class="relative group" x-data="{ show: false }">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input :type="show ? 'text' : 'password'" id="login-password" class="form-input" placeholder="Password" required>
+                        <button type="button" @click="show = !show" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <a href="#" @click.prevent="mode = 'forgot'" class="text-sm font-bold text-iosBlue hover:text-blue-700 transition-colors">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+                    <div class="relative flex justify-center text-xs uppercase tracking-widest"><span class="px-4 bg-transparent text-gray-400 font-bold">Or</span></div>
+                </div>
+
+                <button id="google-signin-btn" class="w-full flex items-center justify-center gap-3 p-3.5 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all group shadow-sm">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5 group-hover:scale-110 transition-transform">
+                    <span class="font-bold text-gray-600 group-hover:text-gray-800">Continue with Google</span>
+                </button>
+
+                <p class="text-center mt-8 text-sm text-gray-500">
+                    New student? <a href="#" @click.prevent="mode = 'register'" class="font-bold text-iosBlue hover:underline">Create Account</a>
+                </p>
+            </div>
+
+            <div x-show="mode === 'register'" 
+                 style="display: none;"
+                 x-transition:enter="transition ease-out duration-500"
+                 x-transition:enter-start="opacity-0 translate-x-8"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 class="w-full max-w-md mx-auto">
+                
+                <button @click="mode = 'login'" class="mb-6 text-gray-400 hover:text-gray-800 flex items-center gap-2 text-sm font-bold transition-colors"><i class="fas fa-arrow-left"></i> Back to Login</button>
+
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+                <p class="text-gray-500 mb-8">Join the hostel community.</p>
+
+                <form id="register-form" class="space-y-4">
+                    <div class="relative group">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input type="email" id="register-email" class="form-input" placeholder="Student Email" required>
+                    </div>
+                    <div class="relative group">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input type="password" id="register-password" class="form-input" placeholder="Password (Min 6 chars)" required>
+                    </div>
+                    <div class="relative group">
+                        <i class="fas fa-check-circle absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input type="password" id="confirm-password" class="form-input" placeholder="Confirm Password" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary mt-4">Create Account</button>
+                </form>
+            </div>
+
+            <div x-show="mode === 'forgot'" 
+                 style="display: none;"
+                 x-transition:enter="transition ease-out duration-500"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 class="w-full max-w-md mx-auto text-center">
+                
+                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl text-iosBlue shadow-inner">
+                    <i class="fas fa-key"></i>
+                </div>
+
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Reset Password</h2>
+                <p class="text-gray-500 mb-8">Enter your registered email to receive reset instructions.</p>
+
+                <form id="forgot-password-form" class="space-y-5 text-left">
+                    <div class="relative group">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors"></i>
+                        <input type="email" id="forgot-email" class="form-input" placeholder="Email Address" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Send Reset Link</button>
+                </form>
+
+                <button @click="mode = 'login'" class="mt-8 text-gray-400 hover:text-gray-800 text-sm font-bold">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script type="module">
+        import { firebaseConfig } from './firebase-config.js';
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const showToast = (message, isError = false) => {
+            Swal.fire({
+                toast: true, position: 'top', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+                icon: isError ? 'error' : 'success', title: message,
+                customClass: { popup: 'rounded-2xl shadow-xl' }
+            });
+        };
+
+        const handleSuccess = async (user) => {
+            const userRef = db.collection('users').doc(user.uid);
+            const doc = await userRef.get();
+            if (!doc.exists) {
+                await userRef.set({ email: user.email, displayName: user.displayName, photoURL: user.photoURL, role: 'student', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            }
+            window.location.href = 'dashboard.html';
+        };
+
+        // Event Listeners
+        document.getElementById('google-signin-btn').addEventListener('click', () => {
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(r => handleSuccess(r.user)).catch(e => showToast(e.message, true));
+        });
+
+        document.getElementById('login-form').addEventListener('submit', e => {
+            e.preventDefault();
+            auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value)
+            .then(r => handleSuccess(r.user)).catch(() => showToast('Invalid credentials', true));
+        });
+
+        document.getElementById('register-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const p1 = document.getElementById('register-password').value;
+            const p2 = document.getElementById('confirm-password').value;
+            if(p1 !== p2) return showToast('Passwords match error', true);
+            if(p1.length < 6) return showToast('Password too short', true);
+            auth.createUserWithEmailAndPassword(document.getElementById('register-email').value, p1)
+            .then(r => { handleSuccess(r.user); showToast('Account Created!'); }).catch(e => showToast(e.message, true));
+        });
+
+        document.getElementById('forgot-password-form').addEventListener('submit', e => {
+            e.preventDefault();
+            auth.sendPasswordResetEmail(document.getElementById('forgot-email').value)
+            .then(() => showToast('Reset link sent')).catch(e => showToast(e.message, true));
+        });
+    </script>
+</body>
+</html>

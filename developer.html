@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased selection:bg-violet-500 selection:text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Likhith Kami | Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                fontFamily: { 
+                    sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    mono: ['JetBrains Mono', 'monospace']
+                },
+                extend: {
+                    colors: {
+                        dark: '#050505',
+                        glass: 'rgba(255, 255, 255, 0.7)',
+                        glassDark: 'rgba(10, 10, 10, 0.6)',
+                    },
+                    animation: {
+                        'aurora': 'aurora 20s linear infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        aurora: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Theme Init
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <style>
+        /* --- GLOBAL & SCROLLBAR --- */
+        body {
+            background-color: #f3f4f6;
+            transition: background-color 0.5s ease;
+            overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+        }
+        .dark body { background-color: #030303; }
+
+        /* Hide Scrollbar but allow scrolling */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* --- BACKGROUND AURORA --- */
+        .aurora-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: aurora 15s ease infinite;
+            opacity: 0.1;
+        }
+        .dark .aurora-bg {
+            background: linear-gradient(-45deg, #4c1d95, #312e81, #1e3a8a, #0f172a);
+            opacity: 0.4;
+        }
+
+        /* --- GLASSMOPHISM CARDS --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .dark .glass-card {
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Mobile Touch State (Active) instead of Hover */
+        .glass-card:active { transform: scale(0.98); }
+        
+        /* Desktop Hover only */
+        @media (min-width: 1024px) {
+            .glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+            /* 3D Tilt is applied via JS for desktop only */
+        }
+
+        /* --- UTILS --- */
+        .scroller-mask { mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+        
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            color: #8b5cf6;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Shimmer Loading Effect for Text */
+        .shimmer-text {
+            background: linear-gradient(90deg, #333 0%, #888 50%, #333 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+        .dark .shimmer-text {
+            background: linear-gradient(90deg, #fff 0%, #888 50%, #fff 100%);
+            -webkit-background-clip: text;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start pt-8 pb-12 px-4 sm:px-8">
+
+    <div class="aurora-bg"></div>
+
+    <nav class="w-full max-w-5xl flex justify-between items-center mb-6 z-50 sticky top-4">
+        <a href="dashboard.html" class="flex items-center gap-3 pl-1 pr-4 py-1.5 rounded-full bg-white/80 dark:bg-black/60 border border-white/40 dark:border-white/10 backdrop-blur-xl shadow-sm hover:scale-105 transition-transform">
+            <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                <i class="fas fa-arrow-left text-xs text-gray-700 dark:text-white"></i>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-800 dark:text-gray-200">Dashboard</span>
+        </a>
+        
+        <button onclick="toggleTheme()" class="w-11 h-11 rounded-full bg-white/80 dark:bg-black/60 border border-white/40 dark:border-white/10 backdrop-blur-xl flex items-center justify-center shadow-sm active:scale-90 transition-transform">
+            <i class="fas fa-sun block dark:hidden text-amber-500"></i>
+            <i class="fas fa-moon hidden dark:block text-violet-400"></i>
+        </button>
+    </nav>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-5xl z-10">
+
+        <div class="glass-card col-span-2 row-span-2 p-6 md:p-8 flex flex-col justify-between tilt-enabled group">
+            <div class="flex justify-between items-start">
+                <div class="relative">
+                    <img src="https://ui-avatars.com/api/?name=Likhith+Kami&background=0f172a&color=fff&size=128&bold=true" class="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover shadow-lg border-2 border-white dark:border-white/10">
+                    <div class="absolute -bottom-1 -right-1 bg-white dark:bg-black p-1 rounded-full">
+                        <div class="w-3 h-3 bg-green-500 rounded-full border border-white dark:border-black animate-pulse"></div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="inline-block px-3 py-1 rounded-lg bg-gray-100/50 dark:bg-white/5 border border-gray-200 dark:border-white/5">
+                        <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Creator</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 md:mt-8">
+                <h1 class="text-3xl md:text-5xl font-black tracking-tight text-gray-900 dark:text-white mb-2 leading-tight">
+                    Likhith Kami
+                </h1>
+                <div class="flex items-center mb-3 h-6">
+                    <span class="text-violet-600 dark:text-violet-400 font-mono font-bold text-sm md:text-base typing-cursor" id="typing-text"></span>
+                </div>
+                <p class="text-xs md:text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
+                    Designing the future with <span class="text-gray-900 dark:text-white font-bold border-b border-violet-500/50">Gen AI</span> & <span class="text-gray-900 dark:text-white font-bold border-b border-violet-500/50">Full Stack</span> wizardry.
+                </p>
+            </div>
+        </div>
+
+        <div class="glass-card col-span-2 md:col-span-1 min-h-[140px] md:min-h-[180px] p-0 relative group">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1605649487215-28c0497f2220?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+            
+            <div class="relative z-10 p-5 h-full flex flex-row md:flex-col justify-between items-end md:items-start">
+                <div class="w-full">
+                    <div class="flex justify-between items-start w-full mb-auto md:mb-0">
+                        <div class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 animate-float">
+                            <i class="fas fa-map-marker-alt text-white text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right md:text-left">
+                    <p class="text-[9px] uppercase font-bold text-gray-300 tracking-widest">Base Ops</p>
+                    <p class="text-lg font-bold text-white">India</p>
+                    <p id="clock" class="text-[10px] font-mono text-gray-400 mt-1">00:00:00</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="mailto:kamilikhith@gmail.com" class="glass-card col-span-1 p-4 md:p-6 flex flex-col items-center justify-center text-center group tilt-enabled">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-3">
+                <i class="fas fa-envelope text-white text-lg"></i>
+            </div>
+            <p class="text-[10px] md:text-xs font-bold text-gray-900 dark:text-white">Email Me</p>
+        </a>
+
+        <a href="https://www.instagram.com/lucky__likhith?igsh=bTgxYjZtZ2wwYmR4" target="_blank" class="glass-card col-span-1 p-4 md:p-0 flex flex-col items-center justify-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10 flex flex-col items-center">
+                <i class="fab fa-instagram text-2xl md:text-3xl text-gray-800 dark:text-white group-hover:text-white mb-2 transition-colors"></i>
+                <p class="text-[9px] font-bold text-gray-600 dark:text-gray-300 group-hover:text-white uppercase">Insta</p>
+            </div>
+        </a>
+
+        <a href="https://www.linkedin.com/in/likhith-kami/" target="_blank" class="glass-card col-span-1 p-4 md:p-0 bg-[#0077b5] md:bg-transparent flex flex-col items-center justify-center relative overflow-hidden group md:hover:bg-[#0077b5] transition-colors">
+            <div class="relative z-10 flex flex-col items-center">
+                <i class="fab fa-linkedin text-2xl md:text-3xl text-white md:text-[#0077b5] md:dark:text-white md:group-hover:text-white mb-2"></i>
+                <p class="text-[9px] font-bold text-white md:text-gray-600 md:dark:text-gray-300 md:group-hover:text-white uppercase">LinkedIn</p>
+            </div>
+        </a>
+
+        <a href="https://github.com/likhith3035" target="_blank" class="glass-card col-span-1 p-4 md:p-0 bg-[#171515] md:bg-[#171515] flex flex-col items-center justify-center group text-white">
+            <i class="fab fa-github text-2xl md:text-3xl mb-2 group-hover:rotate-12 transition-transform"></i>
+            <p class="text-[9px] font-bold uppercase">GitHub</p>
+        </a>
+
+        <div class="glass-card col-span-2 md:col-span-2 p-0 flex flex-col justify-center bg-gray-50/50 dark:bg-white/5">
+            <div class="px-5 pt-4 pb-2 border-b border-gray-200/50 dark:border-white/5 flex justify-between items-center">
+                <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Arsenal</span>
+                <i class="fas fa-code text-[10px] text-gray-400"></i>
+            </div>
+            <div class="scroller-mask w-full overflow-hidden py-5 md:py-6">
+                <div class="flex gap-6 animate-[marquee_20s_linear_infinite] text-2xl md:text-3xl text-gray-400 dark:text-gray-500">
+                    <i class="fab fa-python"></i><i class="fab fa-js"></i><i class="fab fa-react"></i>
+                    <i class="fab fa-node"></i><i class="fab fa-docker"></i><i class="fab fa-aws"></i>
+                    <i class="fas fa-database"></i><i class="fab fa-html5"></i>
+                    <i class="fab fa-python"></i><i class="fab fa-js"></i><i class="fab fa-react"></i>
+                    <i class="fab fa-node"></i><i class="fab fa-docker"></i><i class="fab fa-aws"></i>
+                </div>
+            </div>
+        </div>
+
+        <a href="https://nbkrhostel1.netlify.app/" target="_blank" class="glass-card col-span-2 md:col-span-1 p-5 md:p-6 flex flex-row md:flex-col justify-between items-center md:items-start border-orange-200 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 group">
+            <div class="flex flex-col">
+                <span class="text-[9px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span> Legacy
+                </span>
+                <p class="text-sm font-bold text-gray-900 dark:text-white group-hover:underline">Hostel Portal</p>
+            </div>
+            <div class="w-8 h-8 rounded-full border border-orange-200 dark:border-orange-800 flex items-center justify-center text-orange-500 group-hover:-rotate-45 transition-transform">
+                <i class="fas fa-arrow-right text-xs"></i>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="mt-8 text-center opacity-60">
+        <p class="text-[9px] font-mono text-gray-500 dark:text-gray-500">SECURE CONNECTION ESTABLISHED</p>
+    </div>
+
+    <script>
+        // --- 1. TYPING EFFECT ---
+        const phrases = ["Prompt Engineer", "Full Stack Dev", "UI Designer", "Student"];
+        const el = document.getElementById("typing-text");
+        let pIdx = 0, cIdx = 0, isDeleting = false;
+
+        function type() {
+            const current = phrases[pIdx];
+            el.textContent = current.substring(0, cIdx);
+            
+            let speed = isDeleting ? 40 : 80;
+            if(!isDeleting && cIdx === current.length) { isDeleting=true; speed=2000; }
+            else if(isDeleting && cIdx===0) { isDeleting=false; pIdx=(pIdx+1)%phrases.length; speed=500; }
+            
+            cIdx += isDeleting ? -1 : 1;
+            setTimeout(type, speed);
+        }
+        setTimeout(type, 1000);
+
+        // --- 2. LIVE CLOCK ---
+        setInterval(() => {
+            document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true}) + " IST";
+        }, 1000);
+
+        // --- 3. THEME TOGGLE ---
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // --- 4. DESKTOP TILT (Disabled on Mobile) ---
+        if (window.matchMedia("(min-width: 1024px)").matches) {
+            document.querySelectorAll('.tilt-enabled').forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    card.style.transform = `perspective(1000px) rotateX(${y * 10}deg) rotateY(${x * -10}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                });
+            });
+        }
+    </script>
+</body>
+</html>
