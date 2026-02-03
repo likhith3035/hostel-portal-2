@@ -403,14 +403,36 @@
                             x-transition:enter-start="opacity-0 translate-y-4"
                             x-transition:enter-end="opacity-100 translate-y-0">
 
-                            <div class="flex flex-col items-center justify-center p-6 text-center">
+                            <!-- State: Incomplete Profile -->
+                            <div id="id-incomplete-state"
+                                class="hidden flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
                                 <div
-                                    class="relative w-full max-w-sm mx-auto bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-white/10 p-6 md:p-8">
+                                    class="w-20 h-20 bg-yellow-100 dark:bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 text-yellow-500 animate-pulse">
+                                    <i class="fas fa-id-card-clip text-3xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Setup Digital ID</h3>
+                                <p class="text-gray-500 max-w-sm mx-auto mb-8 font-medium">To generate your secure Gate
+                                    Pass, please complete your profile details (Photo, Name, Phone).</p>
+                                <button onclick="document.querySelector('[x-data]').__x.$data.tab = 'personal'"
+                                    class="px-8 py-4 rounded-2xl bg-iosBlue text-white font-bold text-sm shadow-xl shadow-blue-500/30 hover:scale-105 transition-transform spring-click">
+                                    Complete Profile &rarr;
+                                </button>
+                            </div>
+
+                            <!-- State: Complete ID (Hidden by default) -->
+                            <div id="id-complete-state"
+                                class="hidden flex flex-col items-center justify-center p-6 text-center">
+                                <div
+                                    class="relative w-full max-w-sm mx-auto bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-white/10 p-6 md:p-8 transform transition-transform hover:scale-[1.01] duration-300">
+                                    <!-- Holographic Effect overlay -->
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 pointer-events-none z-10">
+                                    </div>
                                     <div
                                         class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-iosBlue to-blue-400">
                                     </div>
 
-                                    <div class="flex items-center justify-between mb-8">
+                                    <div class="flex items-center justify-between mb-8 relative z-20">
                                         <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
                                             class="w-10 h-10 object-contain">
                                         <div class="text-right">
@@ -420,24 +442,29 @@
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="bg-white p-4 rounded-xl mx-auto mb-6 w-48 h-48 flex items-center justify-center shadow-inner border border-gray-100">
-                                        <div id="qrcode-container"></div>
+                                    <div class="bg-white p-4 rounded-xl mx-auto mb-6 w-48 h-48 flex items-center justify-center shadow-inner border border-gray-100 relative z-20 group cursor-pointer"
+                                        onclick="window.openDetailsPage()">
+                                        <div id="qrcode-container"
+                                            class="opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                                        <div
+                                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded-xl font-bold text-iosBlue text-xs">
+                                            <i class="fas fa-external-link-alt mr-2"></i> Open Card
+                                        </div>
                                     </div>
 
-                                    <h3 class="font-black text-xl text-gray-900 dark:text-white mb-1" id="id-card-name">
-                                        Student Name</h3>
-                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-6"
+                                    <h3 class="font-black text-xl text-gray-900 dark:text-white mb-1 relative z-20"
+                                        id="id-card-name">Student Name</h3>
+                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-6 relative z-20"
                                         id="id-card-role">Hostel Resident</p>
 
                                     <div
-                                        class="flex items-center justify-center gap-2 text-[10px] text-gray-400 font-medium bg-gray-50 dark:bg-white/5 py-3 rounded-xl border border-dashed border-gray-200 dark:border-white/10">
+                                        class="flex items-center justify-center gap-2 text-[10px] text-gray-400 font-medium bg-gray-50 dark:bg-white/5 py-3 rounded-xl border border-dashed border-gray-200 dark:border-white/10 relative z-20">
                                         <i class="fas fa-scan text-base animate-pulse"></i>
                                         <span>Scan at Security Gate</span>
                                     </div>
                                 </div>
-                                <p class="mt-6 text-xs text-center text-gray-400 max-w-xs">This digital ID is valid for
-                                    hostel entry and exit scanning purposes only.</p>
+                                <p class="mt-6 text-xs text-center text-gray-400 max-w-xs">Tap code to view full ID
+                                    details.</p>
                             </div>
 
                         </div>

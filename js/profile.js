@@ -69,28 +69,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rolePreview) rolePreview.textContent = 'Guest';
 
         // --- Digital ID Update ---
+        const idIncomplete = document.getElementById('id-incomplete-state');
+        const idComplete = document.getElementById('id-complete-state');
         const idName = document.getElementById('id-card-name');
         const idRole = document.getElementById('id-card-role');
         const qrContainer = document.getElementById('qrcode-container');
 
-        if (idName) idName.textContent = name;
-        if (idRole && userData?.firestoreData?.role) idRole.textContent = userData.firestoreData.role;
+        // Check if profile is complete (Name, Phone, Photo required)
+        const isProfileComplete = userData?.displayName && userData?.firestoreData?.phone && userData?.photoURL && userData.photoURL.length > 5;
 
-        if (qrContainer && typeof QRCode !== 'undefined' && userData?.email) {
-            qrContainer.innerHTML = '';
-            try {
-                new QRCode(qrContainer, {
-                    text: `ID:${userData.uid}|${userData.email}`,
-                    width: 160,
-                    height: 160,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            } catch (e) {
-                console.error("QR Gen Error:", e);
-                qrContainer.innerHTML = '<p class="text-[10px] text-red-500">QR Error</p>';
+        // Redirect function for card click
+        window.openDetailsPage = () => {
+            if (userData?.uid) window.open(`id-card.html?uid=${userData.uid}`, '_blank');
+        };
+
+        if (idIncomplete && idComplete) {
+            if (isProfileComplete) {
+                idIncomplete.classList.add('hidden');
+                idComplete.classList.remove('hidden');
+
+                if (idName) idName.textContent = name;
+                if (idRole && userData?.firestoreData?.role) idRole.textContent = userData.firestoreData.role;
+
+                if (qrContainer && typeof QRCode !== 'undefined' && userData?.uid) {
+                    qrContainer.innerHTML = '';
+                    try {
+                        // Generate URL for verificaiton
+                        const verificationUrl = `https://nbkristhostelportal.netlify.app/id-card.html?uid=${userData.uid}`;
+                        new QRCode(qrContainer, {
+                            text: verificationUrl,
+                            width: 160,
+                            height: 160,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } catch (e) {
+                        console.error("QR Gen Error:", e);
+                    }
+                }
+            } else {
+                idUniqueState(idIncomplete, idComplete);
             }
+        }
+
+        function idUniqueState(show, hide) {
+            show.classList.remove('hidden');
+            hide.classList.add('hidden');
         }
 
         if (userData?.firestoreData) {

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digital ID Verification | NBKRIST Hostel</title>
+
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                fontFamily: {
+                    sans: ['Plus Jakarta Sans', 'sans-serif'],
+                },
+                extend: {
+                    colors: {
+                        iosBlue: '#007AFF',
+                        iosCardDark: '#1C1C1E',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: #fdfdfd;
+            overflow: hidden;
+        }
+
+        .dark .mesh-bg {
+            background: #000;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #007AFF;
+            top: -50px;
+            left: -50px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: #8e2de2;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(20px, 30px);
+            }
+        }
+
+        .id-card-shadow {
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-black min-h-screen flex items-center justify-center p-4">
+
+    <div class="mesh-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="text-center animate-pulse">
+        <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
+            class="w-16 h-16 mx-auto mb-4 opacity-50">
+        <p class="text-gray-400 font-bold text-sm tracking-widest uppercase">Verifying ID...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-view" class="hidden text-center max-w-sm">
+        <div
+            class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+            <i class="fas fa-exclamation-triangle text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-black text-gray-900 dark:text-white mb-2">Verification Failed</h2>
+        <p class="text-gray-500 text-sm mb-6">Unable to retrieve student details. The ID might be invalid or the network
+            is unreachable.</p>
+        <a href="index.html"
+            class="px-6 py-3 bg-gray-200 dark:bg-white/10 rounded-xl text-sm font-bold text-gray-700 dark:text-white hover:bg-gray-300 transition-colors">Go
+            Home</a>
+    </div>
+
+    <!-- ID Card -->
+    <div id="id-card"
+        class="hidden relative w-full max-w-[360px] bg-white dark:bg-[#1c1c1e]/90 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-white/20 id-card-shadow transform transition-all hover:scale-[1.01]">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-iosBlue to-blue-600 p-6 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+
+            <div class="flex items-center gap-3 relative z-10">
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
+                    class="w-12 h-12 bg-white/90 rounded-xl p-1 shadow-lg">
+                <div>
+                    <h1 class="font-black text-lg tracking-tight leading-none">NBKRIST</h1>
+                    <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest mt-1">Hostel Authority</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- content -->
+        <div class="p-6 pt-12 relative text-center">
+
+            <!-- Avatar -->
+            <div
+                class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 p-1 bg-white dark:bg-[#1c1c1e] rounded-full shadow-xl">
+                <img id="user-photo" src="https://placehold.co/150"
+                    class="w-full h-full rounded-full object-cover border-4 border-gray-50 dark:border-white/5 bg-gray-200">
+                <div class="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-white dark:border-[#1c1c1e] rounded-full z-20"
+                    title="Active"></div>
+            </div>
+
+            <div class="mt-8 space-y-1">
+                <h2 id="user-name" class="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Student Name
+                </h2>
+                <span id="user-role"
+                    class="inline-block px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-iosBlue text-[10px] font-bold uppercase tracking-widest border border-blue-100 dark:border-blue-500/20">Student</span>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="mt-8 grid grid-cols-2 gap-4 text-left">
+                <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase">Gender</p>
+                    <p id="user-gender" class="font-bold text-gray-800 dark:text-white text-sm truncate">-</p>
+                </div>
+                <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase">Phone</p>
+                    <p id="user-phone" class="font-bold text-gray-800 dark:text-white text-sm truncate">-</p>
+                </div>
+            </div>
+
+            <div
+                class="mt-4 p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 text-left flex items-center gap-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center text-gray-500">
+                    <i class="fas fa-envelope text-xs"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase">Email ID</p>
+                    <p id="user-email" class="font-bold text-gray-800 dark:text-white text-xs truncate">
+                        student@example.com</p>
+                </div>
+            </div>
+
+            <!-- Verified Footer -->
+            <div
+                class="mt-8 pt-6 border-t border-dashed border-gray-200 dark:border-white/10 flex items-center justify-between opacity-60">
+                <div class="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                    <i class="fas fa-check-circle text-xs"></i>
+                    <span class="text-[10px] font-bold uppercase">Officially Verified</span>
+                </div>
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
+                    class="w-6 opacity-50 grayscale">
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="js/id-card.js"></script>
+
+</body>
+
+</html>
