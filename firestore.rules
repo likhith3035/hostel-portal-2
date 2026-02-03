@@ -38,7 +38,8 @@ service cloud.firestore {
     ====================== */
 
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      // Allow public read for Digital ID verification (QR code scanning)
+      allow read: if true;
 
       // SECURED: Prevent users from making themselves admins on creation
       allow create: if isOwner(userId) &&
