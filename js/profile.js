@@ -15,14 +15,36 @@ window.markNotificationsAsRead = markNotificationsAsRead;
 window.toggleTheme = toggleTheme;
 window.toggleSidebar = toggleSidebar;
 
-// Generate unique Student ID
-function generateStudentId() {
+// Generate unique Student ID with sequential 4-digit number
+async function generateStudentId() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    const randomNum = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    return `${year}-${month}-${day}-NBKRIST-${randomNum}`;
+
+    // Get and increment the counter from Firestore
+    const counterRef = doc(db, 'metadata', 'studentIdCounter');
+
+    try {
+        const counterDoc = await getDoc(counterRef);
+        let nextNumber = 1;
+
+        if (counterDoc.exists()) {
+            nextNumber = (counterDoc.data().current || 0) + 1;
+        }
+
+        // Update counter
+        await setDoc(counterRef, { current: nextNumber }, { merge: true });
+
+        // Format as 4-digit number
+        const sequentialNum = String(nextNumber).padStart(4, '0');
+        return `${year}-${month}-${day}-NBKRIST-${sequentialNum}`;
+    } catch (error) {
+        console.error("Error generating sequential ID:", error);
+        // Fallback to random if counter fails
+        const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        return `${year}-${month}-${day}-NBKRIST-${randomNum}`;
+    }
 }
 
 // Global function for redirect to personal tab
@@ -171,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await updateProfile(user, { displayName: newDisplayName, photoURL: newPhotoURL });
 
             // Generate Student ID if it doesn't exist
-            const studentId = localFirestoreData.studentId || generateStudentId();
+            const studentId = localFirestoreData.studentId || await generateStudentId();
 
             await setDoc(userDocRef, {
                 email: user.email,

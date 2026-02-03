@@ -157,6 +157,15 @@ service cloud.firestore {
     }
 
     /* =====================
+       METADATA (ID COUNTER)
+    ====================== */
+
+    match /metadata/{docId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    /* =====================
        AUDIT LOGS (IMMUTABLE)
     ====================== */
 

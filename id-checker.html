@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Checker | NBKRIST Hostel</title>
+
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }, extend: { colors: { iosBlue: '#007AFF' } } }
+        }
+    </script>
+
+    <style>
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.4;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: #007AFF;
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: #00D4FF;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, 40px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-black min-h-screen flex items-center justify-center p-4">
+    <div class="mesh-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Checker Interface -->
+    <div id="checker-interface" class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
+                class="w-16 h-16 mx-auto mb-4 opacity-90">
+            <h1 class="text-3xl font-black text-white mb-2">ID Checker</h1>
+            <p class="text-white/80 text-sm">Scan QR or enter last 4 digits</p>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="flex gap-3 mb-6">
+            <button onclick="switchMode('qr')" id="qr-mode-btn"
+                class="flex-1 py-4 rounded-2xl bg-white/20 backdrop-blur-xl text-white font-bold text-sm border-2 border-white/40 transition-all hover:bg-white/30">
+                <i class="fas fa-qrcode mr-2"></i> QR Scanner
+            </button>
+            <button onclick="switchMode('manual')" id="manual-mode-btn"
+                class="flex-1 py-4 rounded-2xl bg-white/10 backdrop-blur-xl text-white/60 font-bold text-sm border-2 border-white/20 transition-all hover:bg-white/20">
+                <i class="fas fa-keyboard mr-2"></i> Manual Entry
+            </button>
+        </div>
+
+        <!-- QR Scanner Mode -->
+        <div id="qr-mode" class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+            <div id="qr-reader" class="rounded-2xl overflow-hidden mb-4 bg-black"></div>
+            <p class="text-white/70 text-xs text-center">Position QR code within the frame</p>
+        </div>
+
+        <!-- Manual Entry Mode -->
+        <div id="manual-mode" class="hidden bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20">
+            <label class="text-white text-sm font-bold mb-2 block">Last 4 Digits</label>
+            <input type="text" id="manual-id-input" maxlength="4" pattern="[0-9]{4}"
+                class="w-full px-6 py-4 rounded-2xl bg-white/20 border-2 border-white/30 text-white text-center text-2xl font-black tracking-widest placeholder-white/40 focus:outline-none focus:border-white/60 transition-all"
+                placeholder="0000">
+            <button onclick="verifyManual()"
+                class="w-full mt-4 py-4 rounded-2xl bg-white text-iosBlue font-black text-sm hover:bg-white/90 transition-all shadow-lg">
+                <i class="fas fa-search mr-2"></i> Verify ID
+            </button>
+        </div>
+    </div>
+
+    <!-- Student Details (Hidden by default) -->
+    <div id="student-details"
+        class="hidden w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-3xl"></i>
+                    <div>
+                        <h2 class="font-black text-lg">Verified</h2>
+                        <p class="text-xs opacity-80">Student Authenticated</p>
+                    </div>
+                </div>
+                <button onclick="resetChecker()"
+                    class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 text-center">
+            <div
+                class="w-24 h-24 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-white/10 border-4 border-white dark:border-white/20 overflow-hidden">
+                <img id="detail-photo" src="https://placehold.co/150" class="w-full h-full object-cover">
+            </div>
+            <h3 id="detail-name" class="text-2xl font-black text-gray-900 dark:text-white mb-1">Student Name</h3>
+            <p id="detail-id" class="text-sm font-bold text-iosBlue mb-4">#2026-02-03-NBKRIST-0001</p>
+
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl">
+                    <p class="text-xs text-gray-400 font-bold uppercase">Role</p>
+                    <p id="detail-role" class="font-bold text-gray-900 dark:text-white text-sm">Student</p>
+                </div>
+                <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl">
+                    <p class="text-xs text-gray-400 font-bold uppercase">Phone</p>
+                    <p id="detail-phone" class="font-bold text-gray-900 dark:text-white text-sm">-</p>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-gray-50 dark:bg-white/5 rounded-xl text-left">
+                <p class="text-xs text-gray-400 font-bold uppercase mb-1">Email</p>
+                <p id="detail-email" class="font-bold text-gray-900 dark:text-white text-xs truncate">
+                    student@example.com</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/id-checker.js"></script>
+</body>
+
+</html>
