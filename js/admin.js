@@ -266,6 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bookingSearch = document.getElementById('booking-search');
     const statTotalBooked = document.getElementById('stat-total-booked');
     const statPendingApproval = document.getElementById('stat-pending-approval');
+    const statMainPending = document.getElementById('stat-pending-bookings'); // Main Dashboard Card
     const statVacateReqs = document.getElementById('stat-vacate-reqs');
 
     let allBookingsData = [];
@@ -304,8 +305,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     onSnapshot(collection(db, CONSTANTS.COLLECTIONS.BOOKINGS), snap => {
         allBookingsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const pendingCount = allBookingsData.filter(b => b.status === CONSTANTS.STATUS.PENDING).length;
+
+        // Update Bookings Tab Stats
         if (statTotalBooked) statTotalBooked.innerText = allBookingsData.filter(b => b.status === CONSTANTS.STATUS.APPROVED).length;
-        if (statPendingApproval) statPendingApproval.innerText = allBookingsData.filter(b => b.status === CONSTANTS.STATUS.PENDING).length;
+        if (statPendingApproval) statPendingApproval.innerText = pendingCount;
+
+        // Update Main Dashboard Stats
+        if (statMainPending) statMainPending.innerText = pendingCount;
+
         renderBookings();
     });
 
