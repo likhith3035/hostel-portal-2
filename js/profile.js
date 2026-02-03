@@ -83,6 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (userData?.uid) window.open(`id-card.html?uid=${userData.uid}`, '_blank');
         };
 
+        // Redirect to Personal Tab for editing
+        window.editProfile = () => {
+            const alpineRoot = document.querySelector('[x-data]');
+            if (alpineRoot && alpineRoot.__x) {
+                alpineRoot.__x.$data.tab = 'personal';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    const nameInput = document.getElementById('displayName');
+                    if (nameInput) nameInput.focus();
+                }, 500);
+            }
+        };
+
         if (idIncomplete && idComplete) {
             if (isProfileComplete) {
                 idIncomplete.classList.add('hidden');
