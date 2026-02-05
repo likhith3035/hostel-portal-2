@@ -42,9 +42,9 @@ service cloud.firestore {
       // Allow public read for Digital ID verification (QR code scanning)
       allow read: if true;
 
-      // Allow users to create their own profile
-      allow create: if isOwner(userId) &&
-        (!('role' in request.resource.data) || request.resource.data.role != 'admin');
+      // Allow users to create their own profile OR admins to restore/create users
+      allow create: if (isOwner(userId) &&
+        (!('role' in request.resource.data) || request.resource.data.role != 'admin')) || isAdmin();
 
       // Allow users to update their own profile (but not escalate to admin)
       // Admins can update any profile

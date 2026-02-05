@@ -219,6 +219,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, { merge: true });
 
             console.log('[Profile] Firestore save successful');
+
+            // --- CACHE INVALIDATION ---
+            // Clear Auth Guard cache so next page load fetches fresh data (preventing stale Soft Gate)
+            try {
+                sessionStorage.removeItem(`auth_cache_${user.uid}`);
+                localStorage.removeItem('soft-gate:active'); // Assume complete now
+                console.log('[Profile] Cleared auth cache to force refresh.');
+            } catch (e) {
+                console.warn('Failed to clear cache:', e);
+            }
+
             showToast('Profile updated successfully!');
 
             // Step 4: Refresh UI

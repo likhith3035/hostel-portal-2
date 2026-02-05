@@ -280,7 +280,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fas fa-envelope text-xs"></i>
                         </button>
                         ${adminBtn}
-                        <button class="delete-user-btn w-7 h-7 rounded bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100" data-id="${u.id}">
+                        <button class="reset-user-btn w-7 h-7 rounded bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-100" data-id="${u.id}" title="Reset Profile Details">
+                            <i class="fas fa-eraser text-xs"></i>
+                        </button>
+                        <button class="delete-user-btn w-7 h-7 rounded bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100" data-id="${u.id}" title="Archive User">
                             <i class="fas fa-trash text-xs"></i>
                         </button>
                     </div>
@@ -316,15 +319,39 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const u = doc.data();
                 const avatar = u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName || 'Deleted'}&background=random&color=ef4444`;
                 const date = u.deletedAt?.toDate().toLocaleDateString() || 'N/A';
-                html += `<tr class="group border-b border-gray-100 dark:border-white/5 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-colors"><td class="px-4 py-3 sm:px-6 sm:py-3"><div class="flex items-center gap-2 sm:gap-3"><img src="${avatar}" class="w-8 h-8 rounded-full object-cover grayscale opacity-70"><div><p class="font-bold text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">${escapeHTML(u.displayName) || 'Unnamed'}</p><p class="text-[10px] text-gray-400">${escapeHTML(u.email)}</p></div></div></td><td class="px-4 py-3 sm:px-6 sm:py-3"><span class="text-xs font-mono text-gray-400">${date}</span></td><td class="px-4 py-3 sm:px-6 sm:py-3 text-right"><button class="restore-user-btn w-auto px-3 py-1.5 rounded-lg bg-green-50 text-green-600 font-bold text-[10px] uppercase tracking-wider hover:bg-green-100 flex items-center justify-center ml-auto gap-2" data-id="${doc.id}"><i class="fas fa-trash-restore"></i> Restore</button></td></tr>`;
+                html += `<tr class="group border-b border-gray-100 dark:border-white/5 hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-colors">
+                    <td class="px-4 py-3 sm:px-6 sm:py-3">
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <img src="${avatar}" class="w-8 h-8 rounded-full object-cover grayscale opacity-70">
+                            <div>
+                                <p class="font-bold text-gray-500 dark:text-gray-400 text-sm whitespace-nowrap">${escapeHTML(u.displayName) || 'Unnamed'}</p>
+                                <p class="text-[10px] text-gray-400">${escapeHTML(u.email)}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 sm:px-6 sm:py-3">
+                        <span class="text-xs font-mono text-gray-400">${date}</span>
+                    </td>
+                    <td class="px-4 py-3 sm:px-6 sm:py-3 text-right">
+                        <div class="flex justify-end gap-2">
+                             <button class="restore-user-btn w-auto px-3 py-1.5 rounded-lg bg-green-50 text-green-600 font-bold text-[10px] uppercase tracking-wider hover:bg-green-100 flex items-center justify-center gap-2" data-id="${doc.id}">
+                                <i class="fas fa-trash-restore"></i> Restore
+                            </button>
+                            <button class="permanent-delete-btn w-auto px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold text-[10px] uppercase tracking-wider hover:bg-red-100 flex items-center justify-center gap-2" data-id="${doc.id}">
+                                <i class="fas fa-ban"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
             });
         }
         if (list) list.innerHTML = html;
     };
 
     document.getElementById('deleted-users-list')?.addEventListener('click', (e) => {
-        const btn = e.target.closest('.restore-user-btn');
-        if (btn) {
+        // Restore
+        const restoreBtn = e.target.closest('.restore-user-btn');
+        if (restoreBtn) {
             Swal.fire({
                 title: 'Restore User?',
                 icon: 'question',
@@ -332,7 +359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }).then(res => {
                 if (res.isConfirmed) {
                     window.safeAsync(async () => {
-                        const id = btn.dataset.id;
+                        const id = restoreBtn.dataset.id;
                         const docSnap = await getDoc(doc(db, 'deletedUsers', id));
                         if (docSnap.exists()) {
                             const data = docSnap.data();
@@ -346,6 +373,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                             auditService.logAction('RESTORE_USER', id, 'user', { restoredBy: auth.currentUser.email });
                         }
                     }, 'Restoring User...');
+                }
+            });
+        }
+
+        // Permanent Delete
+        const deleteBtn = e.target.closest('.permanent-delete-btn');
+        if (deleteBtn) {
+            Swal.fire({
+                title: 'PERMANENTLY DELETE?',
+                text: "This action cannot be undone. All user details (Name, Phone, ID, Pic) will be wiped.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, Wipe Data'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    window.safeAsync(async () => {
+                        const id = deleteBtn.dataset.id;
+                        await deleteDoc(doc(db, 'deletedUsers', id));
+                        showToast('User Permanently Deleted');
+                        loadDeletedUsers();
+                        auditService.logAction('PERMANENT_DELETE_USER', id, 'user', { deletedBy: auth.currentUser.email });
+                    }, 'Wiping Data...');
                 }
             });
         }
@@ -380,6 +430,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                         loadUsers();
                         auditService.logAction('REVOKE_ADMIN', btn.dataset.id, 'user', { by: auth.currentUser.email });
                     }, 'Updating Role...');
+                }
+            });
+        }
+
+        // Reset Profile (Delete Details)
+        if (btn.classList.contains('reset-user-btn')) {
+            Swal.fire({
+                title: 'Reset Profile?',
+                text: 'This will delete phone, gender, ID, and photo. The user will need to complete their profile again.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Reset Details'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    window.safeAsync(async () => {
+                        const id = btn.dataset.id;
+                        await updateDoc(doc(db, CONSTANTS.COLLECTIONS.USERS, id), {
+                            phone: null,
+                            gender: null,
+                            studentId: null,
+                            photoURL: null,
+                            dob: null,
+                            parentName: null,
+                            parentPhone: null,
+                            address: null
+                        });
+                        showToast('Profile Details Cleared');
+                        loadUsers();
+                        auditService.logAction('RESET_USER_PROFILE', id, 'user', { by: auth.currentUser.email });
+                    }, 'Resetting Profile...');
                 }
             });
         }
