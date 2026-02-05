@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hostel-portal-v17';
+const CACHE_NAME = 'hostel-portal-v21';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -10,14 +10,15 @@ const ASSETS_TO_CACHE = [
     '/profile.html',
     '/rules.html',
     '/about.html',
-    '/info.html',
+    '/id-checker.html',
+    '/id-card.html',
     '/contact.html',
     '/admin.html',
     '/developer.html',
+    '/privacy.html',
+    '/terms.html',
     '/main.js',
     '/manifest.json',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png',
     '/js/auth.js',
     '/js/dashboard.js',
     '/js/booking.js',
@@ -30,10 +31,9 @@ const ASSETS_TO_CACHE = [
     '/js/developer.js',
     '/js/about.js',
     '/js/contact.js',
-    'https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js',
-    'https://cdn.jsdelivr.net/npm/sweetalert2@11',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'
+    '/js/id-card.js'
+    // Note: External CDN resources (Alpine, SweetAlert2, Font Awesome, Google Fonts) 
+    // are intentionally excluded as they're loaded from CDN with their own caching
 ];
 
 // Install Event
@@ -47,22 +47,40 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activate Event
+// Message handler for immediate activation
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+// Activate Event - Aggressively clean old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        Promise.all([
-            self.clients.claim(),
-            caches.keys().then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cache) => {
-                        if (cache !== CACHE_NAME) {
-                            console.log('Clearing old cache');
-                            return caches.delete(cache);
-                        }
-                    })
-                );
-            })
-        ])
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    // Delete ALL caches that aren't the current version
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            // Immediately claim all clients to apply new service worker
+            return self.clients.claim();
+        }).then(() => {
+            // Notify all clients to reload for fresh content
+            return self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({
+                        type: 'CACHE_UPDATED',
+                        version: CACHE_NAME
+                    });
+                });
+            });
+        })
     );
 });
 
@@ -70,14 +88,20 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Skip non-GET requests and internal/external APIs that shouldn't be cached
+    // Skip non-GET requests and Firebase/auth APIs - MUST RETURN EARLY
     if (event.request.method !== 'GET' ||
         url.pathname.startsWith('/__/auth/') ||
         url.pathname.startsWith('/__/firebase/') ||
+        url.hostname.includes('firebaseapp.com') ||
+        url.hostname.includes('firebaseio.com') ||
         url.hostname.includes('firestore.googleapis.com') ||
-        url.hostname.includes('firebase') ||
+        url.hostname.includes('identitytoolkit.googleapis.com') ||
+        url.hostname.includes('securetoken.googleapis.com') ||
+        url.hostname.includes('accounts.google.com') ||
+        url.hostname.includes('googleapis.com') ||
         url.hostname.includes('google-analytics') ||
         url.hostname.includes('googletagmanager')) {
+        // CRITICAL: Return early, let browser handle these requests naturally
         return;
     }
 

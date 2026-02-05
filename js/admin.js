@@ -1,4 +1,4 @@
-import { checkUserSession, db, auth, showToast } from '../main.js';
+import { checkUserSession, db, auth, showToast } from '../main.js?v=2';
 import * as CONSTANTS from './core/constants.js';
 import {
     collection,
@@ -103,43 +103,189 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- USER MANAGEMENT ---
     const SUPER_ADMIN = 'kamilikhith@gmail.com';
-    const isSuperAdmin = user.email === SUPER_ADMIN;
+    let isSuperAdmin = false;
+
+    if (user && user.email) {
+        isSuperAdmin = user.email.toLowerCase() === SUPER_ADMIN.toLowerCase();
+    }
+
     const usersList = document.getElementById('users-list');
 
+    // UI Hiding for Non-Super Admins
     if (!isSuperAdmin) {
+        // We only hide specific elements if they aren't the Super Admin
+        // but we still want them to be able to use the panel if they are a regular admin
+        // logic here seems to imply ONLY SUPER ADMIN can see Users tab content?
+        // If so, let's keep it consistent.
         const sidebar = document.querySelector('#sidebar nav');
         if (sidebar && sidebar.children[1]) sidebar.children[1].style.display = 'none';
+
+        // Hide "Total Users" stat card
         const statsGrid = document.querySelector('#admin-interface .grid');
         if (statsGrid && statsGrid.children[0]) statsGrid.children[0].style.display = 'none';
     }
 
-    const loadUsers = async () => {
-        if (!isSuperAdmin) return;
-        const q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), orderBy('email'));
-        const snapshot = await getDocs(q);
-        const totalUsersStat = document.getElementById('stat-total-users');
-        if (totalUsersStat) totalUsersStat.innerText = snapshot.size;
+    // Store all users data for filtering
+    let allUsersData = [];
+    let selectedUsers = new Set();
 
-        if (snapshot.empty) {
-            usersList.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-gray-400 text-xs italic">No students found.</td></tr>`;
+    const loadUsers = async () => {
+        // CRITICAL FIX: Ensure we attempt to load users if isSuperAdmin is true.
+        // If the user isn't super admin, we just return to avoid permission errors.
+        if (!isSuperAdmin) {
+            console.log('Not super admin, skipping user load.');
+            return;
+        }
+
+        console.log('🔄 Loading users...');
+        try {
+            const q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), orderBy('email'));
+            const snapshot = await getDocs(q);
+
+            const totalUsersStat = document.getElementById('stat-total-users');
+            if (totalUsersStat) totalUsersStat.innerText = snapshot.size;
+
+            // Store all users
+            allUsersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log(`✅ Loaded ${allUsersData.length} users:`, allUsersData);
+
+            if (snapshot.empty) {
+                usersList.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 text-xs italic">No students found.</td></tr>`;
+                return;
+            }
+
+            renderUsers();
+        } catch (error) {
+            console.error("Error loading users:", error);
+            if (usersList) usersList.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 text-xs">Error loading users. Check console.</td></tr>`;
+        }
+    };
+
+    // Expose loaders globally for AlpineJS
+    window.loadUsers = loadUsers;
+
+    window.refreshCurrentTab = () => {
+        // AlpineJS will trigger this on tab switch if we bind it
+        const currentTab = document.querySelector('[x-data]').__x.$data.currentTab;
+        if (currentTab === 'users') loadUsers();
+        // Add other tab loaders here if needed, e.g., loadBookings()
+    };
+
+
+    const renderUsers = () => {
+        if (!usersList || !allUsersData.length) {
+            console.warn('⚠️ Cannot render: usersList or allUsersData is empty');
+            return;
+        }
+        console.log('🎨 Rendering users...');
+
+        // Apply filters
+        const searchQuery = document.getElementById('user-search')?.value.toLowerCase() || '';
+        const roleFilter = document.getElementById('filter-role')?.value || 'all';
+        const profileFilter = document.getElementById('filter-profile')?.value || 'all';
+
+        let filtered = allUsersData.filter(u => {
+            // Search filter
+            const matchesSearch = !searchQuery ||
+                (u.displayName && u.displayName.toLowerCase().includes(searchQuery)) ||
+                (u.email && u.email.toLowerCase().includes(searchQuery)) ||
+                (u.studentId && u.studentId.toLowerCase().includes(searchQuery));
+
+            // Role filter
+            const role = u.role || CONSTANTS.ROLES.STUDENT;
+            const matchesRole = roleFilter === 'all' || role === roleFilter;
+
+            // Profile completion filter
+            const isComplete = u.studentId && u.displayName && u.phone;
+            const matchesProfile = profileFilter === 'all' ||
+                (profileFilter === 'complete' && isComplete) ||
+                (profileFilter === 'incomplete' && !isComplete);
+
+            return matchesSearch && matchesRole && matchesProfile;
+        });
+
+        // Update filter count
+        const filterCount = document.getElementById('filter-count');
+        const activeFilters = (roleFilter !== 'all' ? 1 : 0) + (profileFilter !== 'all' ? 1 : 0);
+        if (filterCount) {
+            if (activeFilters > 0) {
+                filterCount.textContent = `${activeFilters} active`;
+                filterCount.classList.remove('hidden');
+            } else {
+                filterCount.classList.add('hidden');
+            }
+        }
+
+        if (!filtered.length) {
+            usersList.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 text-xs italic">No users match your filters.</td></tr>`;
             return;
         }
 
         let html = '';
-        snapshot.forEach(doc => {
-            const u = doc.data();
+        filtered.forEach(u => {
             const role = u.role || CONSTANTS.ROLES.STUDENT;
             const avatar = u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName || 'User'}&background=random&color=fff`;
             const isSelf = u.uid === auth.currentUser?.uid;
+            const isComplete = u.studentId && u.displayName && u.phone;
+            const isSelected = selectedUsers.has(u.id);
+
+            // Profile completion badge
+            const completionBadge = isComplete ?
+                `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 text-[9px] font-bold"><i class="fas fa-check-circle"></i>Complete</span>` :
+                `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[9px] font-bold"><i class="fas fa-exclamation-circle"></i>Incomplete</span>`;
+
+            // Student ID display
+            const studentIdDisplay = u.studentId ?
+                `<button class="view-student-id font-mono text-xs text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer flex items-center gap-1" data-user-id="${u.id}" title="Click to view Digital ID">
+                    ${escapeHTML(u.studentId)}
+                    <i class="fas fa-external-link-alt text-[8px]"></i>
+                </button>
+                <button class="copy-student-id text-gray-400 hover:text-indigo-500 ml-2" data-id="${u.studentId}" title="Copy ID">
+                    <i class="fas fa-copy text-xs"></i>
+                </button>` :
+                `<span class="text-xs text-gray-400 italic">Not generated</span>`;
 
             let adminBtn = '';
             if (isSuperAdmin) {
                 adminBtn = role === CONSTANTS.ROLES.ADMIN ?
-                    `<button class="remove-admin-btn w-7 h-7 rounded bg-orange-50 text-orange-600 flex items-center justify-center hover:bg-orange-100" data-id="${doc.id}" title="Remove Admin" ${isSelf ? 'disabled opacity-50' : ''}><i class="fas fa-user-minus text-xs"></i></button>` :
-                    `<button class="make-admin-btn w-7 h-7 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100" data-id="${doc.id}" title="Make Admin"><i class="fas fa-user-shield text-xs"></i></button>`;
+                    `<button class="remove-admin-btn w-7 h-7 rounded bg-orange-50 text-orange-600 flex items-center justify-center hover:bg-orange-100" data-id="${u.id}" title="Remove Admin" ${isSelf ? 'disabled opacity-50' : ''}><i class="fas fa-user-minus text-xs"></i></button>` :
+                    `<button class="make-admin-btn w-7 h-7 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100" data-id="${u.id}" title="Make Admin"><i class="fas fa-user-shield text-xs"></i></button>`;
             }
 
-            html += `<tr class="group border-b border-gray-100 dark:border-white/5 hover:bg-indigo-50/50 dark:hover:bg-white/5 transition-colors"><td class="px-4 py-3 sm:px-6 sm:py-3"><div class="flex items-center gap-2 sm:gap-3"><img src="${avatar}" class="w-8 h-8 rounded-full object-cover"><div><p class="font-bold text-slate-800 dark:text-white text-sm whitespace-nowrap">${escapeHTML(u.displayName) || 'Unnamed'}</p><p class="text-[10px] text-gray-400">${escapeHTML(u.email)}</p></div></div></td><td class="px-4 py-3 sm:px-6 sm:py-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${role === CONSTANTS.ROLES.ADMIN ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}">${role}</span></td><td class="px-4 py-3 sm:px-6 sm:py-3 text-right"><div class="flex justify-end gap-2">${adminBtn}<button class="delete-user-btn w-7 h-7 rounded bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100" data-id="${doc.id}"><i class="fas fa-trash text-xs"></i></button></div></td></tr>`;
+            html += `<tr class="group border-b border-gray-100 dark:border-white/5 hover:bg-indigo-50/50 dark:hover:bg-white/5 transition-colors" data-user-id="${u.id}">
+                <td class="px-4 py-3">
+                    <input type="checkbox" class="user-checkbox w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" data-user-id="${u.id}" ${isSelected ? 'checked' : ''}>
+                </td>
+                <td class="px-6 py-3">
+                    <div class="flex items-center gap-3">
+                        <img src="${avatar}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-gray-800">
+                        <div>
+                            <p class="font-bold text-slate-800 dark:text-white text-sm">${escapeHTML(u.displayName) || 'Unnamed'}</p>
+                            <p class="text-[10px] text-gray-400">${escapeHTML(u.email)}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-3">
+                    ${studentIdDisplay}
+                </td>
+                <td class="px-6 py-3">
+                    ${completionBadge}
+                </td>
+                <td class="px-6 py-3">
+                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${role === CONSTANTS.ROLES.ADMIN ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-500'}">${role}</span>
+                </td>
+                <td class="px-6 py-3 text-right">
+                    <div class="flex justify-end gap-2">
+                        <button class="email-user-btn w-7 h-7 rounded bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100" data-user-id="${u.id}" title="Send Email">
+                            <i class="fas fa-envelope text-xs"></i>
+                        </button>
+                        ${adminBtn}
+                        <button class="delete-user-btn w-7 h-7 rounded bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100" data-id="${u.id}">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
         });
         if (usersList) usersList.innerHTML = html;
     };
@@ -158,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadDeletedUsers = async () => {
         if (!isSuperAdmin) return;
-        const q = query(collection(db, 'deleted_users'), orderBy('deletedAt', 'desc'));
+        const q = query(collection(db, 'deletedUsers'), orderBy('deletedAt', 'desc'));
         const snapshot = await getDocs(q);
         const list = document.getElementById('deleted-users-list');
 
@@ -187,13 +333,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (res.isConfirmed) {
                     window.safeAsync(async () => {
                         const id = btn.dataset.id;
-                        const docSnap = await getDoc(doc(db, 'deleted_users', id));
+                        const docSnap = await getDoc(doc(db, 'deletedUsers', id));
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             delete data.deletedAt;
                             delete data.deletedBy;
                             await setDoc(doc(db, CONSTANTS.COLLECTIONS.USERS, id), data);
-                            await deleteDoc(doc(db, 'deleted_users', id));
+                            await deleteDoc(doc(db, 'deletedUsers', id));
                             showToast('User Restored');
                             loadDeletedUsers();
                             loadUsers();
@@ -205,10 +351,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+
     usersList?.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
 
+        // Make Admin
         if (btn.classList.contains('make-admin-btn')) {
             Swal.fire({ title: 'Grant Admin?', showCancelButton: true }).then(res => {
                 if (res.isConfirmed) {
@@ -222,6 +370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // Remove Admin
         if (btn.classList.contains('remove-admin-btn')) {
             Swal.fire({ title: 'Revoke Admin?', showCancelButton: true }).then(res => {
                 if (res.isConfirmed) {
@@ -235,6 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // Delete/Archive User
         if (btn.classList.contains('delete-user-btn')) {
             Swal.fire({ title: 'Archive User?', text: 'Move to Archive?', icon: 'warning', showCancelButton: true }).then(res => {
                 if (res.isConfirmed) {
@@ -242,7 +392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const id = btn.dataset.id;
                         const userSnap = await getDoc(doc(db, CONSTANTS.COLLECTIONS.USERS, id));
                         if (userSnap.exists()) {
-                            await setDoc(doc(db, 'deleted_users', id), {
+                            await setDoc(doc(db, 'deletedUsers', id), {
                                 ...userSnap.data(),
                                 deletedAt: serverTimestamp(),
                                 deletedBy: auth.currentUser.email
@@ -257,9 +407,279 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
+
+        // View Student ID
+        if (btn.classList.contains('view-student-id')) {
+            const userId = btn.dataset.userId;
+            const user = allUsersData.find(u => u.id === userId);
+            if (user && user.studentId) {
+                showDigitalIdModal(user);
+            }
+        }
+
+        // Copy Student ID
+        if (btn.classList.contains('copy-student-id')) {
+            const id = btn.dataset.id;
+            navigator.clipboard.writeText(id).then(() => {
+                showToast('Student ID copied!');
+            });
+        }
+
+        // Email single user
+        if (btn.classList.contains('email-user-btn')) {
+            const userId = btn.dataset.userId;
+            const user = allUsersData.find(u => u.id === userId);
+            if (user) {
+                showEmailModal([user]);
+            }
+        }
     });
 
+
     loadUsers();
+
+    // Search and filter event listeners
+    document.getElementById('user-search')?.addEventListener('input', renderUsers);
+    document.getElementById('filter-role')?.addEventListener('change', renderUsers);
+    document.getElementById('filter-profile')?.addEventListener('change', renderUsers);
+    document.getElementById('clear-filters')?.addEventListener('click', () => {
+        document.getElementById('user-search').value = '';
+        document.getElementById('filter-role').value = 'all';
+        document.getElementById('filter-profile').value = 'all';
+        renderUsers();
+    });
+
+    // Bulk selection functionality
+    document.getElementById('select-all-users')?.addEventListener('change', (e) => {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = e.target.checked;
+            if (e.target.checked) {
+                selectedUsers.add(cb.dataset.userId);
+            } else {
+                selectedUsers.delete(cb.dataset.userId);
+            }
+        });
+        updateBulkActionsBar();
+    });
+
+    usersList?.addEventListener('change', (e) => {
+        if (e.target.classList.contains('user-checkbox')) {
+            const userId = e.target.dataset.userId;
+            if (e.target.checked) {
+                selectedUsers.add(userId);
+            } else {
+                selectedUsers.delete(userId);
+            }
+            updateBulkActionsBar();
+        }
+    });
+
+    const updateBulkActionsBar = () => {
+        const bar = document.getElementById('bulk-actions-bar');
+        const countText = document.getElementById('selected-count-text');
+        const count = selectedUsers.size;
+
+        if (count > 0) {
+            bar?.classList.remove('hidden');
+            if (countText) countText.textContent = `${count} selected`;
+        } else {
+            bar?.classList.add('hidden');
+        }
+    };
+
+    document.getElementById('deselect-all')?.addEventListener('click', () => {
+        selectedUsers.clear();
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('select-all-users').checked = false;
+        updateBulkActionsBar();
+    });
+
+    // Show Digital ID Modal
+    const showDigitalIdModal = (user) => {
+        const modal = document.getElementById('digital-id-modal');
+        const content = document.getElementById('digital-id-content');
+
+        content.innerHTML = `
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white">
+                <div class="flex items-center gap-4 mb-4">
+                    <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + (user.displayName || 'User') + '&background=random&color=fff'}" 
+                        class="w-20 h-20 rounded-full border-4 border-white shadow-lg">
+                    <div>
+                        <h4 class="font-bold text-xl">${escapeHTML(user.displayName) || 'Student'}</h4>
+                        <p class="text-indigo-100 text-sm">${escapeHTML(user.email)}</p>
+                    </div>
+                </div>
+                <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4 mb-3">
+                    <p class="text-xs text-indigo-100 mb-1">Student ID</p>
+                    <p class="font-mono text-lg font-bold">${escapeHTML(user.studentId)}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="text-indigo-100 text-xs">Phone</p>
+                        <p class="font-semibold">${escapeHTML(user.phone) || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-indigo-100 text-xs">Gender</p>
+                        <p class="font-semibold capitalize">${escapeHTML(user.gender) || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    // CSV Export Functions
+    const exportToCSV = (users, filename) => {
+        const headers = ['Name', 'Email', 'Student ID', 'Phone', 'Gender', 'Role', 'Profile Status'];
+        const rows = users.map(u => [
+            u.displayName || '',
+            u.email || '',
+            u.studentId || 'Not Generated',
+            u.phone || '',
+            u.gender || '',
+            u.role || 'student',
+            (u.studentId && u.displayName && u.phone) ? 'Complete' : 'Incomplete'
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        showToast('CSV exported successfully!');
+    };
+
+    document.getElementById('export-all-csv')?.addEventListener('click', () => {
+        exportToCSV(allUsersData, `all-users-${new Date().toISOString().split('T')[0]}.csv`);
+    });
+
+    document.getElementById('export-selected-csv')?.addEventListener('click', () => {
+        if (selectedUsers.size === 0) {
+            return showToast('No users selected', true);
+        }
+        const selected = allUsersData.filter(u => selectedUsers.has(u.id));
+        exportToCSV(selected, `selected-users-${new Date().toISOString().split('T')[0]}.csv`);
+    });
+
+    // Bulk Email
+    document.getElementById('bulk-email-btn')?.addEventListener('click', () => {
+        if (selectedUsers.size === 0) {
+            return showToast('No users selected', true);
+        }
+        const selected = allUsersData.filter(u => selectedUsers.has(u.id));
+        showEmailModal(selected);
+    });
+
+    // Show Email Modal
+    const showEmailModal = (users) => {
+        const modal = document.getElementById('email-modal');
+        const recipients = document.getElementById('email-recipients');
+
+        recipients.innerHTML = users.map(u =>
+            `<span class="inline-block bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded text-xs mr-2 mb-2">${escapeHTML(u.email)}</span>`
+        ).join('');
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Store users for sending
+        modal.dataset.recipients = JSON.stringify(users.map(u => ({ email: u.email, name: u.displayName })));
+    };
+
+    // Email template handler
+    document.getElementById('email-template')?.addEventListener('change', (e) => {
+        const template = e.target.value;
+        const subjectInput = document.getElementById('email-subject');
+        const messageInput = document.getElementById('email-message');
+
+        const templates = {
+            welcome: {
+                subject: 'Welcome to NBKRIST Hostel Portal',
+                message: 'Dear Student,\n\nWelcome to the NBKRIST Hostel Portal! We\'re excited to have you here.\n\nPlease complete your profile to access all features.\n\nBest regards,\nHostel Administration'
+            },
+            reminder: {
+                subject: 'Action Required: Complete Your Profile Setup',
+                message: `Dear Student,\n\nWe noticed your profile setup is incomplete.\n\nPlease click the link below to complete your profile immediately:\n${window.location.origin}/profile.html\n\nThis is required to generate your Digital ID and access hostel services.\n\nThank you,\nHostel Administration`
+            },
+            announcement: {
+                subject: 'Important Announcement',
+                message: 'Dear Students,\n\n[Your announcement here]\n\nBest regards,\nHostel Administration'
+            }
+        };
+
+        if (template !== 'custom' && templates[template]) {
+            subjectInput.value = templates[template].subject;
+            messageInput.value = templates[template].message;
+        }
+    });
+
+    // Send Email - Uses EmailJS (same as outpass)
+    document.getElementById('send-email-btn')?.addEventListener('click', () => {
+        const modal = document.getElementById('email-modal');
+        const subject = document.getElementById('email-subject').value;
+        const message = document.getElementById('email-message').value;
+        const recipients = JSON.parse(modal.dataset.recipients || '[]');
+
+        if (!subject || !message) {
+            return showToast('Please fill in subject and message', true);
+        }
+
+        window.safeAsync(async () => {
+            // Using your existing EmailJS setup from outpass
+            const SERVICE_ID = 'service-3035';
+            const PUBLIC_KEY = 'DRzZNtB-kokKLiWq6';
+
+            // Using new dedicated admin email template
+            // Make sure you've created this template in EmailJS!
+            const TEMPLATE_ID = 'template_admin_email';
+
+            try {
+                let successCount = 0;
+                let failCount = 0;
+
+                // Send emails to each recipient
+                for (const recipient of recipients) {
+                    try {
+                        // Simple, clean email parameters
+                        await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                            to_email: recipient.email,
+                            to_name: recipient.name || 'Student',
+                            subject: subject,
+                            message: message
+                        }, PUBLIC_KEY);
+                        successCount++;
+                    } catch (err) {
+                        console.error(`Failed to send to ${recipient.email}:`, err);
+                        failCount++;
+                    }
+                }
+
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById('email-subject').value = '';
+                document.getElementById('email-message').value = '';
+                document.getElementById('email-template').value = 'custom';
+
+                if (failCount === 0) {
+                    showToast(`✅ Email sent to ${successCount} recipient(s)!`);
+                } else {
+                    showToast(`⚠️ Sent to ${successCount}, failed ${failCount}. Check template setup.`, true);
+                }
+            } catch (error) {
+                console.error('Email error:', error);
+                showToast('❌ Email failed. Please create template_admin_email in EmailJS.', true);
+            }
+        }, 'Sending emails...');
+    });
+
 
     // --- BOOKINGS MANAGEMENT ---
     const bookingsTableBody = document.getElementById('bookings-table-body');
@@ -346,28 +766,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- OUTPASSES ---
     const outpassList = document.getElementById('admin-outpass-list');
+    const outpassHistory = document.getElementById('admin-outpass-history');
     const outpassSearch = document.getElementById('outpass-search');
     let allOutpasses = [];
 
     const renderOutpasses = () => {
-        if (!outpassList) return;
         const q = (outpassSearch?.value || '').toLowerCase();
-        const filtered = allOutpasses.filter(o => o.userName.toLowerCase().includes(q) || o.userEmail.toLowerCase().includes(q));
 
-        outpassList.innerHTML = filtered.map(o => `
-            <div class="p-4 bg-white/60 dark:bg-white/5 rounded-2xl border border-white/20 mb-3">
-                <div class="flex justify-between items-start mb-2">
-                    <div><p class="font-bold text-sm">${escapeHTML(o.userName)}</p><p class="text-[10px] text-gray-400">${escapeHTML(o.userEmail)}</p></div>
-                    <span class="text-[10px] font-bold uppercase ${o.status === CONSTANTS.STATUS.PENDING ? 'text-amber-500' : 'text-green-500'}">${o.status}</span>
+        // Filter by search
+        const matches = allOutpasses.filter(o =>
+            (o.userName || '').toLowerCase().includes(q) ||
+            (o.userEmail || '').toLowerCase().includes(q)
+        );
+
+        // Split Data
+        const pending = matches.filter(o => o.status === CONSTANTS.STATUS.PENDING);
+        const history = matches.filter(o => o.status !== CONSTANTS.STATUS.PENDING);
+
+        // Render Pending List
+        if (outpassList) {
+            outpassList.innerHTML = pending.length ? pending.map(o => `
+                <div class="p-4 bg-white/60 dark:bg-white/5 rounded-2xl border border-white/20 mb-3 hover:shadow-lg transition-all duration-300">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-bold text-sm">${escapeHTML(o.userName)}</p>
+                            <p class="text-[10px] text-gray-400">${escapeHTML(o.userEmail)}</p>
+                            <p class="text-[10px] text-indigo-500 mt-1 font-medium"><i class="fas fa-map-marker-alt mr-1"></i>${escapeHTML(o.destination || 'N/A')}</p>
+                            <p class="text-[10px] text-gray-500"><i class="fas fa-calendar mr-1"></i>${new Date(o.fromDate).toLocaleString()}</p>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase text-amber-600 bg-amber-100 dark:bg-amber-500/20 px-2 py-1 rounded-lg">Pending</span>
+                    </div>
+                    <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-white/5">
+                        <button onclick="window.updateOutpass('${o.id}', '${CONSTANTS.STATUS.APPROVED}', '${o.userId}')" 
+                            class="flex-1 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20">
+                            Approve
+                        </button>
+                        <button onclick="window.updateOutpass('${o.id}', '${CONSTANTS.STATUS.REJECTED}', '${o.userId}')" 
+                            class="flex-1 py-2 bg-red-50 text-red-500 border border-red-100 dark:bg-transparent dark:border-white/10 text-xs font-bold rounded-xl hover:bg-red-100 transition-colors">
+                            Reject
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    ${o.status === CONSTANTS.STATUS.PENDING ? `
-                        <button onclick="window.updateOutpass('${o.id}', '${CONSTANTS.STATUS.APPROVED}', '${o.userId}')" class="px-3 py-1 bg-indigo-600 text-white text-[10px] font-bold rounded-lg">Approve</button>
-                        <button onclick="window.updateOutpass('${o.id}', '${CONSTANTS.STATUS.REJECTED}', '${o.userId}')" class="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-lg">Reject</button>
-                    ` : ''}
+            `).join('') : '<div class="text-center py-10 opacity-50"><i class="fas fa-check-circle text-4xl mb-2 text-gray-300"></i><p class="text-xs font-bold uppercase tracking-widest text-gray-400">All Caught Up</p></div>';
+        }
+
+        // Render History List
+        if (outpassHistory) {
+            outpassHistory.innerHTML = history.length ? history.map(o => `
+                <div class="p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 mb-2 opacity-75 hover:opacity-100 transition-opacity">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold text-xs text-gray-700 dark:text-gray-300">${escapeHTML(o.userName)}</p>
+                            <p class="text-[9px] text-gray-400">${new Date(o.fromDate).toLocaleDateString()}</p>
+                        </div>
+                        <span class="text-[9px] font-bold uppercase px-2 py-1 rounded-md ${o.status === CONSTANTS.STATUS.APPROVED ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}">
+                            ${o.status}
+                        </span>
+                    </div>
+                    <div class="mt-1 flex justify-between items-center text-[9px] text-gray-400">
+                         <span>${escapeHTML(o.destination || '')}</span>
+                         <span class="font-mono">${o.passId || ''}</span>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('') : '<p class="text-center text-gray-400 text-[10px] py-6 uppercase tracking-widest font-bold">No recent history</p>';
+        }
     };
 
     onSnapshot(query(collection(db, CONSTANTS.COLLECTIONS.OUTPASSES), orderBy('timestamp', 'desc')), snap => {
@@ -378,13 +840,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.updateOutpass = (id, status, studentId) => {
         window.safeAsync(async () => {
             const passRef = doc(db, CONSTANTS.COLLECTIONS.OUTPASSES, id);
-            await updateDoc(passRef, { status });
+
+            // 1. Update Status
+            const updateData = { status };
+            // Add approval timestamp if approved
+            if (status === CONSTANTS.STATUS.APPROVED) {
+                updateData.approvedAt = serverTimestamp();
+            }
+            await updateDoc(passRef, updateData);
+
+            // 2. Send Notification
             await addDoc(collection(db, CONSTANTS.COLLECTIONS.NOTIFICATIONS), {
                 recipientId: studentId,
                 message: `Outpass ${status}`,
                 timestamp: serverTimestamp(),
                 read: false
             });
+
             showToast('Updated');
         }, 'Updating Outpass...');
     };

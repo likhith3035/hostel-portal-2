@@ -1,4 +1,4 @@
-import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal, CONSTANTS } from '../main.js';
+import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal, CONSTANTS } from '../main.js?v=2';
 import {
     collection,
     addDoc,
@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 description: description,
                 urgency: urgency
             };
+
+            const complaintId = complaintIdField?.value;
 
             if (complaintId) {
                 await updateDoc(doc(db, CONSTANTS.COLLECTIONS.COMPLAINTS, complaintId), complaintData);

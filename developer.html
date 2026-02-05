@@ -235,6 +235,29 @@
                 </div>
             </div>
 
+            <!-- Emergency Cache Clear Section -->
+            <section class="glass-panel" style="padding: 2rem; margin-top: 2rem; border: 2px solid #ef4444;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 1.5rem;"></i>
+                    <h3 style="margin: 0; color: #ef4444;">Emergency Cache Clear</h3>
+                </div>
+                <p style="margin-bottom: 1rem; opacity: 0.8;">
+                    Use this only if experiencing severe cache issues. This will clear ALL caches, storage, and force a
+                    complete reload.
+                </p>
+                <button onclick="clearAllCaches()" class="spring-click" style="background: linear-gradient(135deg, #ef4444, #dc2626); 
+                               color: white; 
+                               border: none; 
+                               padding: 12px 24px; 
+                               border-radius: 12px; 
+                               font-weight: 600; 
+                               cursor: pointer;
+                               box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                               transition: transform 0.2s, box-shadow 0.2s;">
+                    <i class="fas fa-trash-alt"></i> Clear All Caches & Reload
+                </button>
+            </section>
+
         </div>
 
         <!-- Right Column: Bio & Skills (8 cols) -->
@@ -379,6 +402,7 @@
             }
         });
     </script>
+    <script src="js/clear-cache.js"></script>
 </body>
 
 </html>

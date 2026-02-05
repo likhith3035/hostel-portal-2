@@ -42,16 +42,22 @@ export const dbService = {
                 }
             }
 
-            // 3. Atomic Updates
-            const updatedBeds = { ...room.beds };
-            updatedBeds[bedId] = {
-                status: 'taken',
-                userId: user.uid,
-                updatedAt: new Date().toISOString()
-            };
-            transaction.update(roomRef, { beds: updatedBeds });
+            /* 
+               SECURITY FIX: 
+               Students CANNOT directly update 'rooms' or write to 'audit_logs' via client-side rules.
+               We only create the Booking Request. The Admin must approve it and update the room status.
+            */
 
-            // Create Booking
+            // 3. Skip Atomic Room Update (Admin does this on approval)
+            // const updatedBeds = { ...room.beds };
+            // updatedBeds[bedId] = {
+            //     status: 'taken',
+            //     userId: user.uid,
+            //     updatedAt: new Date().toISOString()
+            // };
+            // transaction.update(roomRef, { beds: updatedBeds });
+
+            // Create Booking Request
             transaction.set(bookingRef, {
                 userId: user.uid,
                 userEmail: user.email,
@@ -63,13 +69,8 @@ export const dbService = {
                 timestamp: serverTimestamp()
             });
 
-            // Log Action
-            transaction.set(auditRef, {
-                action: 'BOOK_ROOM',
-                userId: user.uid,
-                details: { roomId: roomData.id, roomNumber: room.roomNumber, bedId },
-                timestamp: serverTimestamp()
-            });
+            // Skip Audit Log (Admin only / Backend only)
+            // transaction.set(auditRef, { ... });
 
             return { success: true };
         });
@@ -102,7 +103,7 @@ export const dbService = {
 
                 const snapshot = await getDocs(q);
                 if (!snapshot.empty) {
-                    throw new Error('You already have an active request of this type.');
+                    return { success: false, error: 'ACTIVE_REQUEST_EXISTS', message: 'You already have an active request of this type.' };
                 }
             }
 

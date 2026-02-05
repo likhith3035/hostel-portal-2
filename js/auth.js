@@ -45,7 +45,8 @@ const handleSuccess = async (user) => {
 
         showToast('Authentication Successful!', false);
         setTimeout(() => {
-            window.location.href = 'index.html';
+            const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+            window.location.href = redirectUrl ? decodeURIComponent(redirectUrl) : 'index.html';
         }, 1000);
 
     } catch (error) {

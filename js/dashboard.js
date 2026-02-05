@@ -1,4 +1,4 @@
-import { auth, checkUserSession, db, setupNotificationListener, toggleTheme, toggleSidebar, CONSTANTS } from '../main.js';
+import { auth, checkUserSession, db, setupNotificationListener, toggleTheme, toggleSidebar, CONSTANTS } from '../main.js?v=2';
 import { onAuthStateChanged } from './firebase/firebase-auth.js';
 import {
     collection,
@@ -82,17 +82,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (roomWidget) {
             if (user) {
-                const bookingsQuery = query(
-                    collection(db, CONSTANTS.COLLECTIONS.BOOKINGS),
-                    where('userId', '==', user.uid),
-                    where('status', 'in', [CONSTANTS.STATUS.CONFIRMED, CONSTANTS.STATUS.PENDING, CONSTANTS.STATUS.APPROVED, CONSTANTS.STATUS.REJECTED]),
-                    limit(1)
-                );
-                onSnapshot(bookingsQuery, (snapshot) => {
-                    if (!snapshot.empty) {
-                        const data = snapshot.docs[0].data();
+                // SECURITY FIX V2: The user might not have permission to QUERY the collection (list).
+                // But they definitely have permission to READ their own document if the ID is their UID.
+                // Since Booking ID == User ID, we just listen to that one document.
+                onSnapshot(doc(db, CONSTANTS.COLLECTIONS.BOOKINGS, user.uid), (docBox) => {
+                    // Check if doc exists and has data
+                    if (docBox.exists()) {
+                        const data = docBox.data();
+
+                        // Proceed with checking status
                         const isPending = data.status === CONSTANTS.STATUS.PENDING;
                         const isRejected = data.status === CONSTANTS.STATUS.REJECTED;
+                        const isVacated = data.status === CONSTANTS.STATUS.VACATED;
+
+                        // If vacated, treat as no booking
+                        if (isVacated) {
+                            roomWidget.innerHTML = defaultRoomHTML;
+                            return;
+                        }
 
                         if (isRejected) {
                             roomWidget.innerHTML = `
@@ -141,7 +148,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>
                         <div class="absolute -bottom-10 -right-10 w-32 h-32 ${isPending ? 'bg-amber-500/10' : 'bg-blue-500/10'} rounded-full blur-3xl"></div>`;
+
                     } else {
+                        // User has no booking doc created yet OR it was deleted
                         roomWidget.innerHTML = defaultRoomHTML;
                     }
                 }, error => {

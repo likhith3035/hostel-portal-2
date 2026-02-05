@@ -40,7 +40,7 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-    <title>NBKR Hostel | About</title> <!-- CHANGED TITLE -->
+    <title>About & Features | NBKRIST Hostel</title>
     <!-- Favicon -->
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
@@ -55,15 +55,6 @@
             background: transparent;
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.5);
-            border-radius: 10px;
-        }
-
         .glass-panel {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(25px);
@@ -76,16 +67,6 @@
             background: rgba(20, 20, 20, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
-        }
-
-        .nav-item.active {
-            background: #007AFF;
-            color: white;
-            box-shadow: 0 8px 25px -6px rgba(0, 122, 255, 0.5);
-        }
-
-        .nav-item.active i {
-            color: white;
         }
 
         .mesh-bg {
@@ -178,24 +159,13 @@
                     class="nav-item flex items-center px-5 py-4 rounded-[1.2rem] text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all spring-click"><i
                         class="fas fa-book w-6"></i> <span>Rules</span></a>
                 <a href="about.html"
-                    class="nav-item active flex items-center px-5 py-4 rounded-[1.2rem] font-semibold transition-all spring-click"><i
-                        class="fas fa-info-circle w-6"></i> <span>About</span></a> <!-- CHANGED LINK -->
+                    class="nav-item active flex items-center px-5 py-4 rounded-[1.2rem] bg-iosBlue text-white shadow-xl shadow-blue-500/30 transition-all spring-click"><i
+                        class="fas fa-info-circle w-6"></i> <span>About</span></a>
                 <a href="developer.html"
                     class="nav-item admin-link flex items-center px-5 py-4 rounded-[1.2rem] text-gray-500 dark:text-gray-400 hover:bg-white/60 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all spring-click hidden"><i
-                        class="fas fa-code w-6"></i> <span>Developer</span></a> <!-- ADDED admin-link CLASS -->
+                        class="fas fa-code w-6"></i> <span>Developer</span></a>
             </nav>
             <div class="p-5 mt-auto">
-                <div class="flex justify-center space-x-6 mb-6 opacity-70">
-                    <a href="https://github.com/likhith3035" target="_blank"
-                        class="hover:text-iosBlue transition-transform hover:scale-110"><i
-                            class="fab fa-github text-xl"></i></a>
-                    <a href="https://www.instagram.com/lucky__likhith?igsh=bTgxYjZtZ2wwYmR4" target="_blank"
-                        class="hover:text-iosBlue transition-transform hover:scale-110"><i
-                            class="fab fa-instagram text-xl"></i></a>
-                    <a href="https://www.linkedin.com/in/likhith-kami/" target="_blank"
-                        class="hover:text-iosBlue transition-transform hover:scale-110"><i
-                            class="fab fa-linkedin text-xl"></i></a>
-                </div>
                 <button id="logout-sidebar"
                     class="w-full flex items-center px-6 py-4 rounded-[1.2rem] bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-sm font-bold spring-click"><i
                         class="fas fa-sign-out-alt w-6"></i> Sign Out</button>
@@ -203,72 +173,31 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto overflow-x-hidden h-full scroll-smooth p-4 md:p-8">
-            <header class="flex justify-between items-center mb-6 px-1 sticky top-0 z-30 py-3">
-                <div class="flex items-center gap-2">
+            <header class="flex justify-between items-center mb-6 px-4 py-2 sticky top-0 z-30 transition-all gap-4">
+                <div class="flex items-center gap-3 md:gap-4">
                     <button onclick="toggleSidebar()"
                         class="lg:hidden w-10 h-10 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors spring-click">
                         <i class="fas fa-bars text-base"></i>
                     </button>
-                    <div class="flex items-center gap-2">
-                        <div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 flex-shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
-                                class="w-6 h-6 md:w-7 md:h-7 object-contain">
-                            <span
-                                class="font-bold text-xs md:text-base tracking-tight text-gray-900 dark:text-white whitespace-nowrap">NBKRIST</span>
-                        </div>
-                        <div class="hidden lg:block ml-2">
-                            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">About & Info
-                            </h2>
-                            <div class="flex items-center gap-2">
-                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="current-date">
-                                    Loading...</p>
-                                <span class="text-gray-300 dark:text-gray-700">|</span>
-                                <p class="text-sm font-bold text-iosBlue tabular-nums" id="clock-time">00:00</p>
-                            </div>
-                        </div>
+                    <div>
+                        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Guide & Features
+                        </h2>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 lg:gap-4 relative">
+                <div class="flex items-center gap-4">
                     <button onclick="toggleTheme()"
-                        class="w-10 h-10 lg:w-12 lg:h-12 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors spring-click">
-                        <i class="fas fa-sun dark:hidden text-base lg:text-lg"></i>
-                        <i class="fas fa-moon hidden dark:block text-base lg:text-lg"></i>
+                        class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors spring-click">
+                        <i class="fas fa-sun dark:hidden text-lg"></i>
+                        <i class="fas fa-moon hidden dark:block text-lg"></i>
                     </button>
-                    <!-- Notifications -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open; markNotificationsAsRead()"
-                            class="w-10 h-10 lg:w-12 lg:h-12 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors relative spring-click">
-                            <i class="fas fa-bell text-base lg:text-lg"></i>
-                            <span id="unread-indicator"
-                                class="hidden absolute top-2.5 right-3 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-iosCardDark"></span>
-                        </button>
-                        <div x-show="open" @click.away="open = false"
-                            class="fixed left-4 right-4 top-24 sm:absolute sm:left-auto sm:right-0 sm:top-14 sm:w-96 glass-panel rounded-2xl shadow-2xl z-[100] border border-white/20 origin-top-right">
-                            <div
-                                class="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center">
-                                <span class="font-bold text-lg tracking-tight">Notifications</span><button
-                                    onclick="window.location.reload()"
-                                    class="bg-gray-100 dark:bg-white/10 p-2 rounded-full w-8 h-8 flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors"><i
-                                        class="fas fa-sync-alt text-xs"></i></button>
-                            </div>
-                            <ul id="notifications-list"
-                                class="max-h-[60vh] overflow-y-auto custom-scrollbar p-3 space-y-2">
-                                <li class="p-8 text-center text-gray-400 text-sm font-medium">Loading notifications...
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Profile Dropdown -->
-                    <!-- Profile Dropdown -->
-                    <!-- Profile Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open"
-                            class="w-10 h-10 lg:w-12 lg:h-12 rounded-full glass-panel flex items-center justify-center relative spring-click p-0.5 hover:scale-105 transition-all active:scale-95">
+                            class="w-12 h-12 rounded-full glass-panel flex items-center justify-center relative spring-click p-0.5 hover:scale-105 transition-all active:scale-95">
                             <img id="user-avatar" src="https://placehold.co/100"
                                 class="w-full h-full rounded-full object-cover shadow-sm">
                         </button>
                         <div x-show="open" @click.away="open = false" x-transition
-                            class="absolute right-0 top-12 w-64 liquid-glass-dropdown p-2 shadow-2xl z-[100] border border-white/20 origin-top-right rounded-3xl">
+                            class="absolute right-0 top-12 w-64 glass-panel p-2 shadow-2xl z-[100] border-white/20 origin-top-right rounded-3xl backdrop-blur-xl bg-white/80 dark:bg-black/80">
                             <div class="p-3 border-b border-gray-100 dark:border-white/10 mb-1">
                                 <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Signed in
                                     as
@@ -276,12 +205,6 @@
                                 <p class="font-bold text-gray-900 dark:text-white truncate" id="user-name-dropdown">
                                     Guest</p>
                             </div>
-                            <div class="space-y-1" id="profile-dropdown-list"><a href="profile.html"
-                                    class="flex items-center px-3 py-2 text-xs font-semibold rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"><i
-                                        class="fas fa-user-circle w-4 mr-2 text-gray-400"></i> My Profile</a><a
-                                    href="developer.html"
-                                    class="flex items-center admin-link px-3 py-2 text-xs font-semibold rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors hidden"><i
-                                        class="fas fa-code w-4 mr-2 text-gray-400"></i> Developer</a></div>
                             <div class="mt-1 pt-1 border-t border-gray-100 dark:border-white/10"><button
                                     id="logout-header"
                                     class="w-full flex items-center px-3 py-2 text-xs font-bold text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"><i
@@ -294,117 +217,223 @@
             <div class="max-w-6xl mx-auto pb-20 animate-fade-in space-y-16">
 
                 <!-- Hero Section -->
-                <section class="text-center relative py-10 md:py-20">
+                <section class="text-center relative py-10">
                     <div
                         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] -z-10 animate-pulse">
                     </div>
-
                     <div
-                        class="inline-block px-5 py-2 rounded-full bg-white/50 dark:bg-white/10 border border-white/20 backdrop-blur-md text-xs font-black uppercase tracking-[0.2em] mb-8 text-gray-500 dark:text-gray-300 shadow-sm">
-                        Experience The Future
+                        class="inline-block px-5 py-2 rounded-full bg-white/50 dark:bg-white/10 border border-white/20 backdrop-blur-md text-xs font-black uppercase tracking-[0.2em] mb-4 text-gray-500 dark:text-gray-300 shadow-sm">
+                        Student Portal v2.0
                     </div>
-
-                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
+                    <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-6">
                         <span
-                            class="block text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-300 dark:to-gray-500">Student
-                            Living.</span>
-                        <span
-                            class="block text-transparent bg-clip-text bg-gradient-to-r from-iosBlue to-cyan-500">Reimagined.</span>
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-iosBlue to-purple-600">Everything
+                            You Need.</span><br>
+                        <span class="text-gray-900 dark:text-white">One Tap Away.</span>
                     </h1>
-
-                    <p
-                        class="text-xl md:text-2xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                        The NBKRIST Hostel Portal combines stunning aesthetics with powerful utility to create a
-                        seamless campus
-                        experience.
+                    <p class="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-medium leading-relaxed">
+                        A complete guide to using the NBKRIST Hostel Portal. Manage your campus life with speed, style,
+                        and simplicity.
                     </p>
                 </section>
 
-                <!-- Bento Grid Features -->
-                <section class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-                    <!-- Large Card -->
-                    <div
-                        class="md:col-span-2 glass-panel p-10 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-500">
-                        <div
-                            class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-iosBlue/20 to-transparent rounded-bl-full -mr-16 -mt-16 transition-all group-hover:scale-110 duration-700">
-                        </div>
-                        <div class="relative z-10 h-full flex flex-col justify-between">
-                            <div
-                                class="w-16 h-16 rounded-3xl bg-iosBlue/10 text-iosBlue flex items-center justify-center text-3xl mb-6 shadow-sm">
-                                <i class="fas fa-bed"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Smart Booking</h3>
-                                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">Real-time room
-                                    availability with
-                                    instant confirmation and seamless allocation logic.</p>
-                            </div>
-                        </div>
+                <!-- How It Works (Visual Flow) -->
+                <section class="max-w-5xl mx-auto">
+                    <div class="text-center mb-12">
+                        <span
+                            class="inline-block py-1 px-3 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest mb-3 border border-blue-500/20">Simplifying
+                            Campus Life</span>
+                        <h2 class="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">Three Steps to
+                            Freedom</h2>
+                        <p class="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">No more paperwork. No more waiting.
+                            The entire process is digital, instant, and secure.</p>
                     </div>
 
-                    <!-- Tall Card -->
-                    <div
-                        class="md:row-span-2 glass-panel p-10 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-500 flex flex-col justify-between">
+                    <div class="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Connecting Line (Desktop) -->
                         <div
-                            class="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-emerald-500/10 to-transparent">
+                            class="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-gray-200 dark:via-white/20 to-transparent z-0">
                         </div>
-                        <div>
-                            <div
-                                class="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-3xl mb-6 shadow-sm">
-                                <i class="fas fa-utensils"></i>
-                            </div>
-                            <h3 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Mess Menu</h3>
-                            <p class="text-gray-500 dark:text-gray-400 font-medium">Daily nutritional updates with
-                                premium
-                                "Like" interactions.</p>
-                        </div>
-                        <div class="mt-8 space-y-3">
-                            <div
-                                class="glass-panel p-3 rounded-xl flex items-center gap-3 bg-white/40 dark:bg-black/20">
-                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                <span class="text-xs font-bold uppercase tracking-wider opacity-70">Breakfast</span>
-                            </div>
-                            <div
-                                class="glass-panel p-3 rounded-xl flex items-center gap-3 bg-white/40 dark:bg-black/20">
-                                <div class="w-2 h-2 rounded-full bg-orange-500"></div>
-                                <span class="text-xs font-bold uppercase tracking-wider opacity-70">Lunch</span>
-                            </div>
-                            <div
-                                class="glass-panel p-3 rounded-xl flex items-center gap-3 bg-white/40 dark:bg-black/20">
-                                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                <span class="text-xs font-bold uppercase tracking-wider opacity-70">Dinner</span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Small Card 1 -->
-                    <div
-                        class="glass-panel p-8 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500">
+                        <!-- Step 1 -->
                         <div
-                            class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-2xl mb-4 shadow-sm">
-                            <i class="fas fa-ticket-alt"></i>
+                            class="glass-panel p-8 rounded-[2rem] text-center relative z-10 hover:-translate-y-2 transition-transform duration-500 group">
+                            <div
+                                class="w-24 h-24 mx-auto rounded-full bg-white dark:bg-black border-4 border-gray-50 dark:border-[#2c2c2e] flex items-center justify-center text-3xl shadow-xl mb-6 relative group-hover:scale-110 transition-transform">
+                                <span
+                                    class="absolute top-0 right-0 w-6 h-6 bg-blue-500 rounded-full border-2 border-white dark:border-black flex items-center justify-center text-[10px] font-bold text-white">1</span>
+                                <i class="fas fa-id-card text-blue-500"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Verify Identity</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Login instantly. Your digital identity
+                                is automatically created, replacing physical ID cards for gate access.</p>
                         </div>
-                        <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">E-Outpass</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-tight">Digital gate
-                            passes with
-                            QR-ready receipts.</p>
-                    </div>
 
-                    <!-- Small Card 2 -->
-                    <div
-                        class="glass-panel p-8 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-500">
+                        <!-- Step 2 -->
                         <div
-                            class="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mb-4 shadow-sm">
-                            <i class="fas fa-exclamation-circle"></i>
+                            class="glass-panel p-8 rounded-[2rem] text-center relative z-10 hover:-translate-y-2 transition-transform duration-500 group delay-[100ms]">
+                            <div
+                                class="w-24 h-24 mx-auto rounded-full bg-white dark:bg-black border-4 border-gray-50 dark:border-[#2c2c2e] flex items-center justify-center text-3xl shadow-xl mb-6 relative group-hover:scale-110 transition-transform">
+                                <span
+                                    class="absolute top-0 right-0 w-6 h-6 bg-purple-500 rounded-full border-2 border-white dark:border-black flex items-center justify-center text-[10px] font-bold text-white">2</span>
+                                <i class="fas fa-fingerprint text-purple-500"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Request & Approve</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Select dates, add a reason, and submit.
+                                The system auto-validates limits and notifies the warden immediately.</p>
                         </div>
-                        <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">Complaints</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-tight">Direct maintenance
-                            tracking & resolution.</p>
+
+                        <!-- Step 3 -->
+                        <div
+                            class="glass-panel p-8 rounded-[2rem] text-center relative z-10 hover:-translate-y-2 transition-transform duration-500 group delay-[200ms]">
+                            <div
+                                class="w-24 h-24 mx-auto rounded-full bg-white dark:bg-black border-4 border-gray-50 dark:border-[#2c2c2e] flex items-center justify-center text-3xl shadow-xl mb-6 relative group-hover:scale-110 transition-transform">
+                                <span
+                                    class="absolute top-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white dark:border-black flex items-center justify-center text-[10px] font-bold text-white">3</span>
+                                <i class="fas fa-qrcode text-green-500"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Scan & Go</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Approval generates a unique,
+                                time-limited QR code. Flash it at the security scanner and walk out. Done.</p>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Developer Spotlight -->
-                <section class="mt-16">
+                <!-- Admin & Deep Dive (Feature Spotlight) -->
+                <section class="space-y-20">
+                    <!-- Spotlight 1: Security -->
+                    <div class="flex flex-col md:flex-row items-center gap-10">
+                        <div
+                            class="flex-1 glass-panel p-10 rounded-[2.5rem] bg-gradient-to-br from-indigo-500/5 to-transparent border-indigo-500/10">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-2xl mb-6 shadow-lg shadow-indigo-500/30">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 class="text-3xl font-black mb-4">Ironclad Security</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                                Security isn't an afterthought. The portal uses <strong>Real-time Database
+                                    Authentication</strong> to ensure only verified students access campus facilities.
+                                Every outpass is digitally signed and logged, creating an unforgeable audit trail that
+                                keeps the campus safe.
+                            </p>
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-200">
+                                    <i class="fas fa-check-circle text-green-500"></i> Anti-spoof QR Codes
+                                </li>
+                                <li class="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-200">
+                                    <i class="fas fa-check-circle text-green-500"></i> Live Verification Status
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="flex-1 relative h-64 md:h-auto w-full">
+                            <div class="absolute inset-0 bg-indigo-500/20 blur-[80px] rounded-full"></div>
+                            <div
+                                class="glass-panel p-6 rounded-3xl relative rotate-3 hover:rotate-0 transition-transform duration-500 cursor-default">
+                                <div
+                                    class="flex items-center gap-4 mb-4 border-b border-gray-100 dark:border-white/10 pb-4">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-wider text-gray-400">System
+                                            Status</p>
+                                        <p class="font-bold text-gray-900 dark:text-white">Active & Secure</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                                        <div class="h-full w-[98%] bg-green-500"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] font-mono text-gray-400">
+                                        <span>Uptime: 99.9%</span>
+                                        <span>Threats: 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spotlight 2: Efficiency (Reversed) -->
+                    <div class="flex flex-col md:flex-row-reverse items-center gap-10">
+                        <div
+                            class="flex-1 glass-panel p-10 rounded-[2.5rem] bg-gradient-to-bl from-orange-500/5 to-transparent border-orange-500/10">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-orange-500 text-white flex items-center justify-center text-2xl mb-6 shadow-lg shadow-orange-500/30">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3 class="text-3xl font-black mb-4">Zero Latency Admin</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                                Wardens don't need to be in the office to approve requests. The <strong>Mobile Admin
+                                    Console</strong> allows staff to manage complaints, approve leave, and broadcast
+                                messages from anywhere on campus, instantly.
+                            </p>
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-200">
+                                    <i class="fas fa-check-circle text-orange-500"></i> Instant Push Notifications
+                                </li>
+                                <li class="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-200">
+                                    <i class="fas fa-check-circle text-orange-500"></i> Paperless Workflow
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="flex-1 relative h-64 md:h-auto w-full">
+                            <div class="absolute inset-0 bg-orange-500/20 blur-[80px] rounded-full"></div>
+                            <!-- Decorative Admin Card -->
+                            <div
+                                class="glass-panel p-6 rounded-3xl relative -rotate-3 hover:rotate-0 transition-transform duration-500 cursor-default">
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Outpass
+                                        Request</span>
+                                    <span
+                                        class="px-2 py-1 rounded bg-orange-100 text-orange-600 text-[10px] font-bold">PENDING</span>
+                                </div>
+                                <div class="flex gap-4">
+                                    <button
+                                        class="flex-1 py-3 rounded-xl bg-gray-900 text-white text-xs font-bold">Approve</button>
+                                    <button
+                                        class="flex-1 py-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Project Vision & Impact -->
+                <section class="relative py-16 overflow-hidden">
+                    <div
+                        class="glass-panel p-10 md:p-20 rounded-[3rem] text-center relative z-10 bg-white/50 dark:bg-white/5 backdrop-blur-3xl border border-white/20">
+                        <i class="fas fa-quote-left text-4xl text-gray-300 dark:text-gray-700 mb-6 block"></i>
+                        <h2 class="text-2xl md:text-4xl font-black leading-tight mb-8">
+                            "We didn't just digitize the paper form.<br>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">We
+                                engineered a better way to live.</span>"
+                        </h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mt-12">
+                            <div>
+                                <h4 class="text-4xl font-black text-gray-900 dark:text-white">100%</h4>
+                                <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mt-2">Paperless</p>
+                            </div>
+                            <div>
+                                <h4 class="text-4xl font-black text-gray-900 dark:text-white">&lt;1m</h4>
+                                <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mt-2">Approval Time
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-4xl font-black text-gray-900 dark:text-white">24/7</h4>
+                                <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mt-2">Availability
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-4xl font-black text-gray-900 dark:text-white">0</h4>
+                                <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mt-2">Queues</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Developer Section (Kept for Credits) -->
+                <section class="mt-10">
                     <div
                         class="glass-panel p-8 md:p-12 rounded-[3rem] relative overflow-hidden border border-white/40 dark:border-white/10">
                         <div
@@ -412,85 +441,38 @@
                         </div>
 
                         <div class="flex flex-col md:flex-row items-center gap-10 relative z-10">
-                            <div class="relative group">
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity duration-500">
-                                </div>
-                                <img src="images/developer.jpg"
-                                    class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white dark:border-white/10 shadow-2xl relative z-10 hover:scale-105 transition-transform duration-500"
-                                    alt="Developer">
-                                <!-- Verified Badge -->
-                                <div
-                                    class="absolute bottom-2 right-2 z-20 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center border-2 border-white dark:border-[#1c1c1e] shadow-lg">
-                                    <i class="fas fa-check text-xs"></i>
-                                </div>
-                            </div>
-
+                            <img src="images/developer.jpg"
+                                class="w-32 h-32 md:w-32 md:h-32 rounded-full object-cover border-4 border-white dark:border-white/10 shadow-2xl"
+                                alt="Developer">
                             <div class="text-center md:text-left flex-1">
                                 <div
                                     class="inline-block px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-3">
-                                    Lead Project Architecture</div>
+                                    Project Lead</div>
                                 <h2
-                                    class="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">
+                                    class="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
                                     Likhith Kami</h2>
-                                <p class="text-lg text-gray-500 dark:text-gray-400 mb-6 font-medium max-w-xl">
-                                    Full-stack developer passionate about building intuitive, high-performance digital
-                                    experiences. Bringing the NBKRIST campus closer together through code.
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium max-w-xl">
+                                    "I built this portal to make hostel life easier, faster, and more beautiful. Enjoy
+                                    the experience."
                                 </p>
-
                                 <div class="flex flex-wrap justify-center md:justify-start gap-4">
                                     <a href="https://github.com/likhith3035" target="_blank"
-                                        class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-gray-900 text-white hover:bg-black transition-all hover:scale-105 shadow-lg shadow-gray-900/20 active:scale-95">
-                                        <i class="fab fa-github text-xl"></i>
-                                        <span class="font-bold text-sm">GitHub</span>
-                                    </a>
+                                        class="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"><i
+                                            class="fab fa-github text-xl"></i></a>
                                     <a href="https://www.linkedin.com/in/likhith-kami/" target="_blank"
-                                        class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-[#0077b5] text-white hover:bg-[#006396] transition-all hover:scale-105 shadow-lg shadow-blue-500/20 active:scale-95">
-                                        <i class="fab fa-linkedin text-xl"></i>
-                                        <span class="font-bold text-sm">LinkedIn</span>
-                                    </a>
+                                        class="text-gray-400 hover:text-blue-600 transition-colors"><i
+                                            class="fab fa-linkedin text-xl"></i></a>
                                     <a href="https://www.instagram.com/lucky__likhith?igsh=bTgxYjZtZ2wwYmR4"
-                                        target="_blank"
-                                        class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white transition-all hover:scale-105 shadow-lg shadow-pink-500/20 active:scale-95">
-                                        <i class="fab fa-instagram text-xl"></i>
-                                        <span class="font-bold text-sm">Instagram</span>
-                                    </a>
+                                        target="_blank" class="text-gray-400 hover:text-pink-500 transition-colors"><i
+                                            class="fab fa-instagram text-xl"></i></a>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Tech Stack Ticker -->
-                <section class="glass-panel p-6 rounded-[2rem] overflow-hidden">
-                    <div
-                        class="flex justify-center items-center gap-4 md:gap-12 flex-wrap opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                        <div class="flex items-center gap-2">
-                            <i class="fab fa-html5 text-2xl text-orange-500"></i>
-                            <span class="font-bold text-sm">HTML5</span>
-                        </div>
-                        <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                        <div class="flex items-center gap-2">
-                            <i class="fab fa-css3-alt text-2xl text-blue-500"></i>
-                            <span class="font-bold text-sm">Tailwind</span>
-                        </div>
-                        <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                        <div class="flex items-center gap-2">
-                            <i class="fab fa-js text-2xl text-yellow-400"></i>
-                            <span class="font-bold text-sm">Alpine.js</span>
-                        </div>
-                        <div class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                        <div class="flex items-center gap-2">
-                            <i class="fas fa-fire text-2xl text-orange-400"></i>
-                            <span class="font-bold text-sm">Firebase</span>
                         </div>
                     </div>
                 </section>
 
                 <!-- Footer -->
                 <footer class="text-center pt-10 pb-5">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Developed with ❤️ by
-                        Likhith</p>
                     <p class="text-[10px] text-gray-500 font-medium opacity-50">NBKRIST Hostel Portal v2.0 &copy; 2026
                     </p>
                 </footer>
@@ -498,7 +480,7 @@
             </div>
         </main>
     </div>
-    <script type="module" src="js/about.js"></script> <!-- CHANGED SCRIPT -->
+    <script type="module" src="js/about.js"></script>
 </body>
 
 </html>

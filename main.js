@@ -7,6 +7,7 @@ import {
     getDoc,
     query,
     where,
+    orderBy,
     onSnapshot,
     writeBatch,
     arrayUnion,
@@ -48,6 +49,19 @@ window.escapeHTML = (str) => {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+};
+
+// --- UTILITY: Debounce ---
+window.debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 };
 
 // --- HELPER: Firebase Error Mapper ---
@@ -124,14 +138,47 @@ export const startClock = () => {
     setInterval(update, 1000);
 };
 
-// PWA Service Worker Registration
-// PWA Service Worker Registration - TEMPORARILY DISABLED TO FIX CACHE
+// PWA Service Worker Registration with aggressive cache management
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (let registration of registrations) {
-            registration.unregister();
-            // console.log('Service Worker unregistered to clear cache');
-        }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('Service Worker registered successfully');
+
+                // Listen for cache update messages from service worker
+                navigator.serviceWorker.addEventListener('message', event => {
+                    if (event.data.type === 'CACHE_UPDATED') {
+                        console.log('New cache version detected:', event.data.version);
+
+                        // Clear all storage to prevent stale data
+                        sessionStorage.clear();
+
+                        // Show update notification
+                        showToast('App updated! Reloading for fresh content...', true);
+
+                        // Auto-reload after short delay to apply changes
+                        setTimeout(() => {
+                            window.location.reload(true);
+                        }, 1500);
+                    }
+                });
+
+                // Check for updates periodically
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New service worker available
+                            console.log('New service worker available, will activate on reload');
+                            showToast('New version available! Page will refresh...', false);
+
+                            // Force immediate update
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+            })
+            .catch(err => console.log('Service Worker registration failed:', err));
     });
 }
 
@@ -264,56 +311,13 @@ export function setupNotificationListener(user) {
         });
         notificationsList.innerHTML = html;
 
-        // Attach Swipe Listeners
+        // Attach Swipe Listeners with proper cleanup
         const items = notificationsList.querySelectorAll('.notification-item');
         items.forEach(item => {
             let startX, currentX;
+            const abortController = new AbortController();
+            const signal = abortController.signal;
 
-            const handleTouchStart = (e) => {
-                startX = e.touches[0].clientX;
-                item.style.transition = 'none'; // Disable transition for direct tracking
-            };
-
-            const handleTouchMove = (e) => {
-                if (!startX) return;
-                currentX = e.touches[0].clientX;
-                const diff = currentX - startX;
-
-                // Only allow left swipe
-                if (diff < 0) {
-                    // Add resistance
-                    const translate = Math.max(diff, -150);
-                    item.style.transform = `translateX(${translate}px)`;
-
-                    // Show background cue
-                    if (diff < -50) {
-                        item.style.background = 'rgba(239, 68, 68, 0.1)'; // faint red tint
-                    }
-                }
-            };
-
-            const handleTouchEnd = (e) => {
-                if (!startX || !currentX) return;
-                const diff = currentX - startX;
-                item.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-
-                if (diff < -100) {
-                    // Swipe Threshold Met -> Delete
-                    item.style.transform = 'translateX(-100%)';
-                    item.style.opacity = '0';
-                    setTimeout(() => {
-                        window.deleteNotification(item.dataset.id);
-                    }, 300);
-                } else {
-                    // Reset
-                    item.style.transform = 'translateX(0)';
-                    item.style.background = '';
-                }
-                startX = null;
-                currentX = null;
-            };
-
-            // Unified Swipe Handler (Touch & Mouse)
             const handleStart = (clientX) => {
                 startX = clientX;
                 item.style.transition = 'none';
@@ -345,6 +349,7 @@ export function setupNotificationListener(user) {
                     item.style.opacity = '0';
                     setTimeout(() => {
                         window.deleteNotification(item.dataset.id);
+                        abortController.abort(); // Clean up listeners
                     }, 300);
                 } else {
                     item.style.transform = 'translateX(0)';
@@ -355,43 +360,55 @@ export function setupNotificationListener(user) {
             };
 
             // Touch Events
-            item.addEventListener('touchstart', (e) => handleStart(e.touches[0].clientX), { passive: true });
-            item.addEventListener('touchmove', (e) => handleMove(e.touches[0].clientX), { passive: true });
-            item.addEventListener('touchend', handleEnd, { passive: true });
+            item.addEventListener('touchstart', (e) => handleStart(e.touches[0].clientX), { passive: true, signal });
+            item.addEventListener('touchmove', (e) => handleMove(e.touches[0].clientX), { passive: true, signal });
+            item.addEventListener('touchend', handleEnd, { passive: true, signal });
 
-            // Mouse Events
+            // Mouse Events - Use element-scoped listeners instead of global
             let isMouseDown = false;
             item.addEventListener('mousedown', (e) => {
                 isMouseDown = true;
                 handleStart(e.clientX);
-            });
 
-            // Attach move/up to window to catch drags outside element
-            window.addEventListener('mousemove', (e) => {
-                if (isMouseDown) handleMove(e.clientX);
-            });
+                // Temporarily add move/up listeners to document
+                const handleMouseMove = (e) => {
+                    if (isMouseDown) handleMove(e.clientX);
+                };
 
-            window.addEventListener('mouseup', () => {
-                if (isMouseDown) {
-                    isMouseDown = false;
-                    handleEnd();
-                }
-            });
+                const handleMouseUp = () => {
+                    if (isMouseDown) {
+                        isMouseDown = false;
+                        handleEnd();
+                    }
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            }, { signal });
         });
     };
 
     if (privateUnsubscribe) privateUnsubscribe();
     if (generalUnsubscribe) generalUnsubscribe();
 
-    const privateQuery = query(collection(db, 'notifications'), where('recipientId', '==', user.uid));
-    privateUnsubscribe = onSnapshot(privateQuery, (snapshot) => {
-        privateNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderCombinedNotifications();
-    });
+    // Query all notifications - no where/orderBy to avoid permission and index issues
+    // Filtering and sorting done on client side
+    const notificationsQuery = collection(db, 'notifications');
+    privateUnsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+        const allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const generalQuery = query(collection(db, 'notifications'), where('recipientId', '==', null));
-    generalUnsubscribe = onSnapshot(generalQuery, (snapshot) => {
-        generalNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Filter and sort on client side
+        privateNotifications = allDocs.filter(n => n.recipientId === user.uid);
+        generalNotifications = allDocs.filter(n => n.recipientId === null || !n.recipientId);
+
+        renderCombinedNotifications();
+    }, (error) => {
+        console.error('[Notifications] Listener error:', error);
+        // Fallback: show empty state
+        privateNotifications = [];
+        generalNotifications = [];
         renderCombinedNotifications();
     });
 }
@@ -619,9 +636,78 @@ authFlashStyle.innerHTML = `
 `;
 document.head.appendChild(authFlashStyle);
 
+// --- SOFT GATE: Profile Completion Check ---
+const showSoftGateBanner = () => {
+    const bannerID = 'profile-incomplete-banner';
+    if (!document.getElementById(bannerID)) {
+        const banner = document.createElement('div');
+        banner.id = bannerID;
+        banner.className = 'fixed top-0 left-0 right-0 z-[100] bg-amber-500 text-white px-4 py-3 shadow-lg flex items-center justify-center sm:justify-between animate-fade-in-down';
+        banner.innerHTML = `
+            <div class="flex items-center gap-3 container max-w-7xl mx-auto">
+                <div class="bg-white/20 p-2 rounded-lg hidden sm:block"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="font-bold text-sm">Action Required: Profile Incomplete</p>
+                    <p class="text-xs opacity-90 hidden sm:block">Please complete your profile to access all hostel features (Digital ID, Outpasses, etc).</p>
+                </div>
+                <a href="profile.html" class="ml-4 bg-white text-amber-600 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-amber-50 transition-colors shadow-sm whitespace-nowrap">
+                    Complete Now &rarr;
+                </a>
+            </div>
+        `;
+        document.body.prepend(banner);
+        document.body.style.paddingTop = '60px';
+    }
+};
+
+const hideSoftGateBanner = () => {
+    const existingBanner = document.getElementById('profile-incomplete-banner');
+    if (existingBanner) {
+        existingBanner.remove();
+        document.body.style.paddingTop = '0px';
+    }
+};
+
+// 0. INSTANT CHECK: Run immediately based on LocalStorage (prevents flash)
+if (localStorage.getItem('soft-gate:active') === 'true' && !window.location.pathname.includes('profile.html')) {
+    console.log('[SoftGate] Restoring banner from LocalStorage cache');
+    showSoftGateBanner();
+}
+
+const checkSoftGate = (user, userData) => {
+    if (!user) return;
+
+    // Debugging: Check what data we actually have
+    console.log('[SoftGate] Checking profile for:', user.email);
+    console.log('[SoftGate] UserData:', userData);
+
+    // If we only have cached role data (partial), we might assume incomplete OR fetch fresh data.
+    // For now, let's strictly check content.
+    const hasId = userData && userData.studentId && userData.studentId !== 'undefined' && String(userData.studentId).trim() !== '';
+    const hasName = userData && userData.displayName && userData.displayName !== 'undefined' && String(userData.displayName).trim() !== '';
+    const hasPhone = userData && userData.phone && userData.phone !== 'undefined' && String(userData.phone).trim() !== '';
+
+    const isProfileComplete = hasId && hasName && hasPhone;
+    const isProfilePage = window.location.pathname.includes('profile.html');
+
+    console.log(`[SoftGate] Status: ID=${hasId}, Name=${hasName}, Phone=${hasPhone} -> Complete? ${isProfileComplete}`);
+
+    // --- CHECK: Complete or Incomplete? ---
+    if (isProfileComplete || isProfilePage) {
+        // Condition met: User is allowed access without nagging.
+        console.log('[SoftGate] Profile completed! Removing banner.');
+        localStorage.removeItem('soft-gate:active'); // Clear cache
+        hideSoftGateBanner();
+    } else {
+        // Condition failed: Profile INCOMPLETE and not on profile page.
+        console.warn('[SoftGate] Profile incomplete, showing banner.');
+        localStorage.setItem('soft-gate:active', 'true'); // Set cache
+        showSoftGateBanner();
+    }
+};
+
 window.addEventListener('auth:initialized', (e) => {
     const { user, role, userData } = e.detail;
-
     if (!user) {
         setupGuestUI();
         return;
@@ -630,8 +716,23 @@ window.addEventListener('auth:initialized', (e) => {
     // Initialize Notifications for logged in user
     setupNotificationListener(user);
 
+    // Run Soft Gate Check
+    checkSoftGate(user, userData);
+});
+
+// RACE CONDITION FIX: If Auth initialized BEFORE this script loaded
+if (window.currentUser) {
+    console.log('[SoftGate] Auth already initialized, running check immediately.');
+    // We might need to fetch userData if it's not fully there, but auth-guard sets window.currentUserData
+    if (window.currentUserData) {
+        checkSoftGate(window.currentUser, window.currentUserData);
+    }
+    setupNotificationListener(window.currentUser);
+}
+
+// --- COMMON UI SETUP: Names, Avatar, Admin, Logout ---
+const setupCommonUI = (user, role, userData) => {
     // 1. Populate Names with "Undefined" Protection
-    // Check if displayName is literally the string "undefined" or null
     let safeName = 'Student';
     if (userData?.displayName && userData.displayName !== 'undefined') {
         safeName = userData.displayName;
@@ -686,7 +787,38 @@ window.addEventListener('auth:initialized', (e) => {
         logoutSidebar.innerHTML = '<i class="fas fa-sign-out-alt w-6"></i> Sign Out';
         logoutSidebar.className = "w-full flex items-center px-6 py-4 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-sm font-bold";
     }
+};
+
+window.addEventListener('auth:initialized', (e) => {
+    const { user, role, userData } = e.detail;
+
+    if (!user) {
+        setupGuestUI();
+        return;
+    }
+
+    // Initialize Notifications for logged in user
+    setupNotificationListener(user);
+
+    // Run Soft Gate Check
+    checkSoftGate(user, userData);
+
+    // Run Common UI Setup (Name, Avatar, Admin)
+    setupCommonUI(user, role, userData);
 });
+
+// RACE CONDITION FIX: If Auth initialized BEFORE this script loaded
+if (window.currentUser) {
+    console.log('[SoftGate] Auth already initialized, running check immediately.');
+    // We might need to fetch userData if it's not fully there, but auth-guard sets window.currentUserData
+    // We try to use what we have. If role is missing, default to student.
+    const userData = window.currentUserData || {};
+    const role = userData.role || 'student';
+
+    checkSoftGate(window.currentUser, userData);
+    setupNotificationListener(window.currentUser);
+    setupCommonUI(window.currentUser, role, userData);
+}
 
 // Auto-start clock on all pages
 startClock();

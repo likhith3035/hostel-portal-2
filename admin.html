@@ -83,7 +83,10 @@
 </head>
 
 <body class="text-slate-800 dark:text-slate-200 transition-colors duration-500 overflow-hidden"
-    x-data="{ currentTab: 'stats', sidebarOpen: false }">
+    x-data="{ currentTab: 'stats', sidebarOpen: false }" x-init="$watch('currentTab', value => {
+        if(value === 'users' && window.loadUsers) window.loadUsers();
+        // Add other checks if needed
+    })">
 
     <div class="mesh-bg">
         <div class="orb orb-1"></div>
@@ -290,31 +293,112 @@
                 </div>
 
                 <div x-show="currentTab === 'users'" class="animate-fade-in">
-                    <div class="glass-panel rounded-[1.5rem] overflow-hidden flex flex-col h-[calc(100vh-9rem)]">
+                    <div class="glass-panel rounded-[1.5rem] overflow-hidden flex flex-col h-[75vh]">
                         <div class="p-4 border-b border-gray-200 dark:border-white/10">
                             <div class="flex justify-between items-center mb-3">
                                 <h3 class="font-bold text-lg">User Directory</h3>
-                                <button id="view-archive-btn"
-                                    class="hidden text-xs font-bold bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-gray-500 hover:text-indigo-500 transition-colors shadow-sm">
-                                    <i class="fas fa-trash-alt mr-2"></i>View Archive
-                                </button>
+                                <div class="flex gap-2">
+                                    <!-- Export Dropdown -->
+                                    <div class="relative" x-data="{ exportOpen: false }">
+                                        <button @click="exportOpen = !exportOpen"
+                                            class="text-xs font-bold bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors shadow-sm flex items-center gap-2">
+                                            <i class="fas fa-download"></i>Export
+                                            <i class="fas fa-chevron-down text-[8px]"></i>
+                                        </button>
+                                        <div x-show="exportOpen" @click.away="exportOpen = false" x-transition
+                                            class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-white/10 py-2 z-50">
+                                            <button id="export-all-csv"
+                                                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-2">
+                                                <i class="fas fa-file-csv text-green-500"></i>All Users (CSV)
+                                            </button>
+                                            <button id="export-selected-csv"
+                                                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-2">
+                                                <i class="fas fa-check-square text-indigo-500"></i>Selected (CSV)
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button id="view-archive-btn"
+                                        class="hidden text-xs font-bold bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-gray-500 hover:text-indigo-500 transition-colors shadow-sm">
+                                        <i class="fas fa-trash-alt mr-2"></i>View Archive
+                                    </button>
+                                </div>
                             </div>
-                            <div class="relative"><input type="text" id="user-search" placeholder="Search..."
-                                    class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-sm outline-none"><i
-                                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+                            <!-- Search and Filters -->
+                            <div class="space-y-3">
+                                <div class="relative">
+                                    <input type="text" id="user-search"
+                                        placeholder="Search by name, email, or student ID..."
+                                        class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-sm outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+
+                                <!-- Filter Panel -->
+                                <div class="flex flex-wrap gap-2 items-center">
+                                    <span
+                                        class="text-xs font-bold text-gray-400 uppercase tracking-wider">Filters:</span>
+                                    <select id="filter-role"
+                                        class="text-xs px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 outline-none">
+                                        <option value="all">All Roles</option>
+                                        <option value="student">Students Only</option>
+                                        <option value="admin">Admins Only</option>
+                                    </select>
+                                    <select id="filter-profile"
+                                        class="text-xs px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 outline-none">
+                                        <option value="all">All Profiles</option>
+                                        <option value="complete">Complete Only</option>
+                                        <option value="incomplete">Incomplete Only</option>
+                                    </select>
+                                    <button id="clear-filters"
+                                        class="text-xs px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors">
+                                        <i class="fas fa-times mr-1"></i>Clear
+                                    </button>
+                                    <span id="filter-count"
+                                        class="hidden text-xs font-bold bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-full"></span>
+                                </div>
+
+                                <!-- Bulk Actions Bar -->
+                                <div id="bulk-actions-bar"
+                                    class="hidden bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl p-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span id="selected-count-text"
+                                            class="text-sm font-bold text-indigo-600 dark:text-indigo-400">0
+                                            selected</span>
+                                        <div class="w-px h-4 bg-indigo-300 dark:bg-indigo-500/30"></div>
+                                        <button id="bulk-email-btn"
+                                            class="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                                            <i class="fas fa-envelope"></i>Email
+                                        </button>
+                                    </div>
+                                    <button id="deselect-all"
+                                        class="text-xs font-bold text-gray-500 hover:text-red-500">
+                                        <i class="fas fa-times"></i> Deselect All
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="flex-1 overflow-x-auto overflow-y-auto">
-                            <table class="w-full text-left min-w-[700px] border-separate border-spacing-y-2 px-4">
+                            <table class="w-full text-left min-w-[900px] border-separate border-spacing-y-2 px-4">
                                 <thead class="sticky top-0 z-10">
                                     <tr
                                         class="text-[10px] uppercase text-gray-400 dark:text-gray-500 font-black tracking-widest">
                                         <th
-                                            class="px-6 py-4 pl-8 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl rounded-l-2xl shadow-sm border-y border-l border-gray-100 dark:border-white/5">
+                                            class="px-4 py-4 pl-6 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl rounded-l-2xl shadow-sm border-y border-l border-gray-100 dark:border-white/5">
+                                            <input type="checkbox" id="select-all-users"
+                                                class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                        </th>
+                                        <th
+                                            class="px-6 py-4 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl shadow-sm border-y border-gray-100 dark:border-white/5">
                                             Student Profile</th>
                                         <th
                                             class="px-6 py-4 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl shadow-sm border-y border-gray-100 dark:border-white/5">
-                                            Role & Access</th>
+                                            Student ID</th>
+                                        <th
+                                            class="px-6 py-4 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl shadow-sm border-y border-gray-100 dark:border-white/5">
+                                            Status</th>
+                                        <th
+                                            class="px-6 py-4 bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl shadow-sm border-y border-gray-100 dark:border-white/5">
+                                            Role</th>
                                         <th
                                             class="px-6 py-4 pr-8 text-right bg-white/95 dark:bg-[#1c1c1e] backdrop-blur-xl rounded-r-2xl shadow-sm border-y border-r border-gray-100 dark:border-white/5">
                                             Actions</th>
@@ -322,7 +406,7 @@
                                 </thead>
                                 <tbody id="users-list" class="text-sm">
                                     <tr>
-                                        <td colspan="3" class="p-20 text-center">
+                                        <td colspan="6" class="p-20 text-center">
                                             <div class="flex flex-col items-center justify-center opacity-60">
                                                 <div class="relative w-16 h-16 mb-4">
                                                     <div
@@ -580,10 +664,85 @@
                 </div>
 
             </div>
+
+
+
         </main>
     </div>
 
-    <script type="module" src="js/admin.js"></script>
+    <!-- Digital ID Modal -->
+    <div id="digital-id-modal"
+        class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center">
+                <h3 class="font-bold text-lg">Digital ID Card</h3>
+                <button onclick="document.getElementById('digital-id-modal').classList.add('hidden')"
+                    class="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                    <i class="fas fa-times text-gray-500"></i>
+                </button>
+            </div>
+            <div id="digital-id-content" class="p-6">
+                <!-- ID card will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Composer Modal -->
+    <div id="email-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center">
+                <h3 class="font-bold text-lg">Compose Email</h3>
+                <button onclick="document.getElementById('email-modal').classList.add('hidden')"
+                    class="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                    <i class="fas fa-times text-gray-500"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-2">Recipients</label>
+                    <div id="email-recipients"
+                        class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-black/20 p-3 rounded-lg">
+                        <!-- Recipients will be listed here -->
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Template</label>
+                    <select id="email-template"
+                        class="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 outline-none">
+                        <option value="custom">Custom Message</option>
+                        <option value="welcome">Welcome Email</option>
+                        <option value="reminder">Profile Completion Reminder</option>
+                        <option value="announcement">General Announcement</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Subject</label>
+                    <input type="text" id="email-subject" placeholder="Email subject..."
+                        class="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2">Message</label>
+                    <textarea id="email-message" rows="6" placeholder="Type your message here..."
+                        class="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 outline-none resize-none"></textarea>
+                </div>
+                <div class="flex gap-3 justify-end">
+                    <button onclick="document.getElementById('email-modal').classList.add('hidden')"
+                        class="px-6 py-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="send-email-btn"
+                        class="px-6 py-2 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i>Send Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin.js?v=2.1"></script>
+    <script src="js/clear-cache.js"></script>
 </body>
 
 </html>

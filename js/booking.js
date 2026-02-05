@@ -1,4 +1,4 @@
-import { auth, checkUserSession, handleLogout, db, markNotificationsAsRead, setupNotificationListener, toggleTheme, toggleSidebar, showToast, triggerLoginModal } from '../main.js';
+import { auth, checkUserSession, handleLogout, db, markNotificationsAsRead, setupNotificationListener, toggleTheme, toggleSidebar, showToast, triggerLoginModal } from '../main.js?v=2';
 import {
     collection,
     doc,
@@ -14,7 +14,7 @@ import {
 } from './firebase/firebase-firestore.js';
 
 import { dbService } from './core/db-service.js';
-import { CONSTANTS } from '../main.js';
+import { CONSTANTS } from '../main.js?v=2';
 
 const ROOM_PRICES = {
     // This constant was introduced in the provided snippet, adding it here.

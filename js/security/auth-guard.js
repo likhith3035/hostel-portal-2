@@ -1,6 +1,6 @@
 import { auth, db } from '../../firebase-config.js';
 import { onAuthStateChanged } from '../firebase/firebase-auth.js';
-import { doc, getDoc } from '../firebase/firebase-firestore.js';
+import { doc, getDoc, onSnapshot } from '../firebase/firebase-firestore.js';
 
 /**
  * Auth Guard
@@ -31,97 +31,164 @@ const PUBLIC_PAGES = [
     'index.html',
     'about.html',
     'rules.html',
-    'mess-menu.html', // Mess menu is public read
+    'mess-menu.html',
     'developer.html',
     'contact.html',
     'privacy.html',
     'terms.html',
+    'id-checker.html', // Public ID verification
     '404.html'
 ];
 
 async function initAuthGuard() {
-    const currentPage = window.location.pathname.split('/').pop().split('?')[0] || 'index.html';
+    let currentPage = window.location.pathname.split('/').pop().split('?')[0] || 'index.html';
+    // Handle clean URLs (e.g. /booking -> booking.html)
+    if (!currentPage.endsWith('.html') && !currentPage.includes('.')) {
+        currentPage += '.html';
+    }
 
-    // If public, we might still want to load user state for UI, but don't block
     const isProtected = PROTECTED_PAGES.includes(currentPage);
     const isAdminPage = ADMIN_PAGES.includes(currentPage);
+    const isPublic = PUBLIC_PAGES.includes(currentPage);
 
-    console.log(`[AuthGuard] Checking access for: ${currentPage} (Protected: ${isProtected}, Admin: ${isAdminPage})`);
+    console.log(`[AuthGuard] Page: ${currentPage} (Protected: ${isProtected}, Admin: ${isAdminPage}, Public: ${isPublic})`);
 
-
-    // Initialize as undefined to indicate "loading" state. 
-    // null would mean "definitely logged out", triggering immediate redirects in consumers.
+    // Initialize as undefined to indicate "loading" state
     window.currentUser = undefined;
 
+    // Store unsubscribe function to clean up listener
+    let unsubscribeUserData = null;
+
     onAuthStateChanged(auth, async (user) => {
-        // console.log('[AuthGuard] User state changed:', user ? user.uid : 'null');
+        // Clean up previous listener if any
+        if (unsubscribeUserData) {
+            unsubscribeUserData();
+            unsubscribeUserData = null;
+        }
 
         if (!user) {
             if (isProtected || isAdminPage) {
-                // FORCE REDIRECT - Stop execution
                 console.warn('[AuthGuard] Access denied: Not logged in');
-                localStorage.setItem('auth_debug', 'Access Denied: Not logged in (User is null)');
                 window.location.replace(`login.html?redirect=${encodeURIComponent(currentPage)}&reason=not_logged_in`);
                 return;
             } else {
+                // Public page, just update UI for guest
                 updateGlobalUI(null);
             }
             return;
         }
 
-        // 1. Fetch User Data with STRICT error handling
-        let userData = null;
-        let role = 'student'; // Default to lowest privilege
+        // --- REAL-TIME LISTENER SETUP ---
 
+        // 1. Optimistic Render from Cache (Fast)
+        const cachedData = getCachedUserData(user.uid);
+        if (cachedData && (Date.now() - cachedData.timestamp < 30 * 60 * 1000)) { // 30 min cache for optimistic render
+            console.log('[AuthGuard] Optimistic render from cache');
+            window.currentUser = user;
+            window.currentUserData = cachedData.data;
+            const role = cachedData.data.role || 'student';
+            updateGlobalUI(user, role, cachedData.data);
+
+            // If admin page, verify role immediately from cache while waiting for snapshot
+            if (isAdminPage && role !== 'admin' && user.email !== 'kamilikhith@gmail.com') {
+                window.location.replace('index.html?msg=access_denied');
+                return;
+            }
+        }
+
+        // 2. Setup Real-time Listener (Source of Truth)
         try {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            unsubscribeUserData = onSnapshot(doc(db, 'users', user.uid), (docBox) => {
+                let userData = {};
+                if (docBox.exists()) {
+                    userData = docBox.data();
+                } else {
+                    console.warn('[AuthGuard] User profile missing in DB, using default.');
+                    userData = { role: 'student' };
+                }
+
+                // Update Cache
+                cacheUserData(user.uid, userData);
+
+                // Update Global State
+                window.currentUser = user;
+                window.currentUserData = userData;
+                const role = userData.role || 'student';
+
+                console.log('[AuthGuard] Real-time data received. Role:', role);
+
+                // Admin Security Check (Real-time)
+                if (isAdminPage) {
+                    const SUPER_ADMIN = 'kamilikhith@gmail.com';
+                    if (role !== 'admin' && user.email !== SUPER_ADMIN) {
+                        console.error('[AuthGuard] Security Alert: Unauthorized Admin Access Attempt');
+                        window.location.replace('index.html?msg=access_denied&reason=unauthorized');
+                        return;
+                    }
+                }
+
+                // Dispatch Update
+                updateGlobalUI(user, role, userData);
+
+            }, (error) => {
+                console.error('[AuthGuard] Listener Error:', error);
+                if (isAdminPage && !cachedData) {
+                    alert('Security Error: Unable to verify permissions.');
+                    window.location.replace('index.html');
+                }
+            });
+
+        } catch (error) {
+            console.error('[AuthGuard] Failed to setup listener:', error);
+        }
+    });
+}
+
+// Helper: Fetch user data with retry
+async function fetchUserDataWithRetry(uid, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const userDoc = await getDoc(doc(db, 'users', uid));
             if (userDoc.exists()) {
-                userData = userDoc.data();
-                role = userData.role || 'student';
+                return userDoc.data();
             } else {
-                // If user exists in Auth but not Firestore, they are a student (or uninitialized)
                 console.warn('[AuthGuard] User profile missing, defaulting to student.');
+                return { role: 'student' };
             }
         } catch (error) {
-            console.error('[AuthGuard] Error fetching user data:', error);
-            // On DB error, if we are on an admin page, we MUST deny access to be safe
-            if (isAdminPage) {
-                alert('Security Error: Unable to verify permissions. Access Denied.');
-                window.location.replace('index.html');
-                return;
-            }
+            if (i === maxRetries - 1) throw error;
+            // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
         }
+    }
+}
 
-        // 2. Email Verification Check (Optional - relax for now to avoid blocking testing if not enforced strictly before)
-        // Kept existing logic but ensured it doesn't loop on profile page
-        if (!user.emailVerified && isProtected && currentPage !== 'profile.html' && currentPage !== 'login.html') {
-            // console.warn('[AuthGuard] Email not verified');
-            // Decide strictness based on requirements. For now, we warn but maybe allow if it was allowed before.
-            // The previous code blocked it. We will respect that.
-            // alert('Please verify your email address.');
-            // window.location.href = 'profile.html?msg=verify_email';
-            // return;
-            // COMMENTED OUT to ensure no new blockers during refactor unless explicitly requested.
-            // User's previous code had it but loop protection.
-        }
+// Helper: Cache user data in sessionStorage
+function cacheUserData(uid, data) {
+    try {
+        sessionStorage.setItem(`auth_cache_${uid}`, JSON.stringify({
+            data,
+            timestamp: Date.now()
+        }));
+    } catch (e) {
+        console.warn('[AuthGuard] Failed to cache user data:', e);
+    }
+}
 
-        // 3. Admin Role Check - STRICT
-        if (isAdminPage) {
-            const SUPER_ADMIN = 'kamilikhith@gmail.com';
-            if (role !== 'admin' && user.email !== SUPER_ADMIN) {
-                console.error('[AuthGuard] Security Alert: Unauthorized Admin Access Attempt');
-                localStorage.setItem('auth_debug', `Access Denied: Role mismatch. Role: ${role}, Email: ${user.email}`);
-                window.location.replace('index.html?msg=access_denied&reason=unauthorized');
-                return;
-            }
-            // console.log('[AuthGuard] Admin access confirmed');
-        }
+// Helper: Get cached user data
+function getCachedUserData(uid) {
+    try {
+        const cached = sessionStorage.getItem(`auth_cache_${uid}`);
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+        return null;
+    }
+}
 
-        // 4. Success - Set Global State
-        window.currentUser = user;
-        window.currentUserData = userData;
-        updateGlobalUI(user, role, userData);
-    });
+// Helper: Get cached role only
+function getCachedRole(uid) {
+    const cached = getCachedUserData(uid);
+    return cached?.data?.role || null;
 }
 
 // ... helper functions ...

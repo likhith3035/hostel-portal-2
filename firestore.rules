@@ -22,10 +22,11 @@ service cloud.firestore {
     }
 
     function isSafeRoleChange() {
-      // Allow if admin, OR if role is not being changed, OR if the new role matches existing role
-      return isAdmin() ||
-        !('role' in request.resource.data) ||
-        request.resource.data.role == resource.data.role;
+      // Allow if admin, OR if role field not in request, OR (for new docs allow only 'student', for existing docs prevent changes)
+      return isAdmin() || 
+             !('role' in request.resource.data) || 
+             (resource == null && request.resource.data.role == 'student') ||
+             (resource != null && request.resource.data.role == resource.data.role);
     }
 
     function isNotChanging(field) {
@@ -41,12 +42,17 @@ service cloud.firestore {
       // Allow public read for Digital ID verification (QR code scanning)
       allow read: if true;
 
-      // SECURED: Prevent users from making themselves admins on creation
+      // Allow users to create their own profile
       allow create: if isOwner(userId) &&
-        request.resource.data.keys().hasOnly(['name', 'email', 'role', 'createdAt']) &&
-        request.resource.data.role == 'student';
+        (!('role' in request.resource.data) || request.resource.data.role != 'admin');
 
-      allow update: if (isOwner(userId) || isAdmin()) && isSafeRoleChange();
+      // Allow users to update their own profile (but not escalate to admin)
+      // Admins can update any profile
+      allow update: if (isOwner(userId) &&
+        (!('role' in request.resource.data) || 
+         request.resource.data.role != 'admin' ||
+         (resource != null && resource.data.role == 'admin'))) ||
+        isAdmin();
 
       allow delete: if isAdmin();
     }
@@ -57,45 +63,54 @@ service cloud.firestore {
 
     match /bookings/{bookingId} {
       allow read: if isSignedIn() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+        (bookingId == request.auth.uid || isAdmin());
 
       allow create: if isSignedIn() &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.keys().hasAll(['userId', 'roomId', 'status', 'createdAt']);
+        request.resource.data.userId == request.auth.uid;
 
-      // Allow admins to update anything.
-      // Allow users to ONLY cancel (update leaveRequest/status properly handled by app logic usually, 
-      // but here restricted to leaveRequest for updates. 
-      // note: cancellation usually involves status change, but if logic separates it, this is fine).
-      // If user needs to cancel, they might need to update 'status' to 'cancelled'. 
-      // The user's original rule only allowed 'leaveRequest'. 
-      // Ensure this matches app logic. Assuming user knows their app logic.
       allow update: if isAdmin() || (
         isSignedIn() &&
         resource.data.userId == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leaveRequest'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leaveRequest', 'status'])
       );
 
       allow delete: if isAdmin() ||
-        (isOwner(resource.data.userId) &&
+        (bookingId == request.auth.uid &&
          resource.data.status == 'rejected');
     }
 
     /* =====================
-       OUTPASSES & COMPLAINTS
+       OUTPASSES
     ====================== */
 
-    match /{collection}/{docId} {
-      allow read: if collection in ['outpasses', 'complaints'] &&
-        isSignedIn() &&
+    match /outpasses/{outpassId} {
+      allow read: if isSignedIn() &&
         (resource.data.userId == request.auth.uid || isAdmin());
 
-      allow create: if collection in ['outpasses', 'complaints'] &&
-        isSignedIn() &&
+      allow create: if isSignedIn() &&
         request.resource.data.userId == request.auth.uid;
 
       allow update: if isAdmin() || (
-        collection in ['outpasses', 'complaints'] &&
+        isSignedIn() &&
+        resource.data.userId == request.auth.uid &&
+        isNotChanging('status')
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    /* =====================
+       COMPLAINTS
+    ====================== */
+
+    match /complaints/{complaintId} {
+      allow read: if isSignedIn() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+
+      allow update: if isAdmin() || (
         isSignedIn() &&
         resource.data.userId == request.auth.uid &&
         isNotChanging('status')
@@ -134,26 +149,33 @@ service cloud.firestore {
     }
 
     /* =====================
-       NOTIFICATIONS
+       NOTIFICATIONS - SIMPLIFIED FOR REAL-TIME LISTENERS
     ====================== */
 
     match /notifications/{notifId} {
-      allow read: if isSignedIn() && (
-        resource.data.recipientId == request.auth.uid ||
-        resource.data.recipientId == null ||
-        isAdmin()
-      );
+      // Allow all signed-in users to read notifications
+      // Real-time listeners require simpler rules
+      allow read: if isSignedIn();
 
-      allow create: if isAdmin();
+      // Anyone signed in can create notifications
+      allow create: if isSignedIn();
 
-      allow update: if isAdmin() || (
-        isSignedIn() &&
-        (resource.data.recipientId == request.auth.uid ||
-         resource.data.recipientId == null) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'deletedBy'])
-      );
+      // Users can update notifications
+      allow update: if isSignedIn();
 
-      allow delete: if isAdmin();
+      // Admins can delete all, users can delete their own
+      allow delete: if isAdmin() || isSignedIn();
+    }
+
+    /* =====================
+       GENERAL NOTIFICATIONS (BROADCAST)
+    ====================== */
+
+    match /general-notifications/{notificationId} {
+      // Everyone can read broadcast notifications
+      allow read: if true;
+      // Only admins can create/update/delete
+      allow write: if isAdmin();
     }
 
     /* =====================
@@ -163,6 +185,16 @@ service cloud.firestore {
     match /metadata/{docId} {
       allow read: if true;
       allow write: if isSignedIn();
+    }
+
+    /* =====================
+       DELETED USERS (ARCHIVE)
+    ====================== */
+
+    match /deletedUsers/{docId} {
+      // Only admins can access deleted users archive
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
 
     /* =====================

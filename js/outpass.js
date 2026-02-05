@@ -1,4 +1,4 @@
-import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal, CONSTANTS } from '../main.js';
+import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal, CONSTANTS } from '../main.js?v=2';
 import { dbService } from './core/db-service.js';
 import {
     collection,
@@ -67,8 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const toDate = new Date(toDateVal);
             const now = new Date();
 
-            if (fromDate < now) {
-                showToast('From Date must be in the future', true);
+            // Allow a buffer for form filling (e.g., 5 minutes grace period)
+            // or just ensure it's not too far in the past (e.g. yesterday)
+            // Allow a 15-minute buffer for form filling/clock diffs
+            const fillingBuffer = 15 * 60 * 1000;
+            if (fromDate < (now - fillingBuffer)) {
+                showToast('Departure time cannot be more than 15 minutes in the past', true);
                 return;
             }
 
@@ -104,26 +108,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Send Confirmation Email
-            if (window.emailjs) {
-                const emailParams = {
-                    userName: outpassData.userName,
-                    userEmail: outpassData.userEmail,
-                    status: CONSTANTS.STATUS.PENDING,
-                    statusColor: '#f59e0b',
-                    destination: outpassData.destination,
-                    reason: outpassData.reason || 'Personal',
-                    fromDate: outpassData.fromDate,
-                    toDate: outpassData.toDate,
-                    passId: result.id.substr(0, 6).toUpperCase(),
-                    approvedAt: 'Just Now',
-                    name: "System",
-                    email: "no-reply@nbkrist.org"
-                };
-
-                emailjs.send("service-3035", "template_outpass_status", emailParams, "DRzZNtB-kokKLiWq6")
-                    .catch(err => console.error("Email failed", err));
-            }
+            // Email removed - using in-app notifications only
+            // Email will only be sent when outpass is approved (with outpass ID)
 
             showToast('Outpass Requested Successfully!');
             outpassForm.reset();

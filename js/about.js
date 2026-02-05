@@ -1,4 +1,4 @@
-import { auth, checkUserSession, handleLogout, markNotificationsAsRead, setupNotificationListener, toggleTheme, toggleSidebar, db } from '../main.js';
+import { auth, checkUserSession, handleLogout, markNotificationsAsRead, setupNotificationListener, toggleTheme, toggleSidebar, db } from '../main.js?v=2';
 import { onAuthStateChanged } from './firebase/firebase-auth.js';
 import { doc, getDoc } from './firebase/firebase-firestore.js';
 

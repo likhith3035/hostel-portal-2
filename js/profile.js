@@ -1,8 +1,9 @@
-import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal } from '../main.js';
+import { checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar, showToast, triggerLoginModal } from '../main.js?v=2';
 import {
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    runTransaction
 } from './firebase/firebase-firestore.js';
 import {
     updateProfile,
@@ -15,35 +16,37 @@ window.markNotificationsAsRead = markNotificationsAsRead;
 window.toggleTheme = toggleTheme;
 window.toggleSidebar = toggleSidebar;
 
-// Generate unique Student ID with sequential 4-digit number
+// Generate unique Student ID with Firestore transaction (atomic)
 async function generateStudentId() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
 
-    // Get and increment the counter from Firestore
     const counterRef = doc(db, 'metadata', 'studentIdCounter');
 
+    // Use Firestore transaction for atomic increment
     try {
-        const counterDoc = await getDoc(counterRef);
-        let nextNumber = 1;
+        const nextNumber = await runTransaction(db, async (transaction) => {
+            const counterDoc = await transaction.get(counterRef);
+            let current = 1;
 
-        if (counterDoc.exists()) {
-            nextNumber = (counterDoc.data().current || 0) + 1;
-        }
+            if (counterDoc.exists()) {
+                current = (counterDoc.data().current || 0) + 1;
+            }
 
-        // Update counter
-        await setDoc(counterRef, { current: nextNumber }, { merge: true });
+            transaction.set(counterRef, { current }, { merge: true });
+            return current;
+        });
 
         // Format as 4-digit number
         const sequentialNum = String(nextNumber).padStart(4, '0');
         return `${year}-${month}-${day}-NBKRIST-${sequentialNum}`;
     } catch (error) {
-        console.error("Error generating sequential ID:", error);
-        // Fallback to random if counter fails
-        const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-        return `${year}-${month}-${day}-NBKRIST-${randomNum}`;
+        console.error("Transaction failed, using timestamp-based ID:", error);
+        // Fallback to timestamp-based unique ID
+        const timestamp = Date.now().toString().slice(-4);
+        return `${year}-${month}-${day}-NBKRIST-${timestamp}`;
     }
 }
 
@@ -190,11 +193,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const newGender = genderInput?.value || '';
 
         try {
+            // Step 1: Update Firebase Auth profile
             await updateProfile(user, { displayName: newDisplayName, photoURL: newPhotoURL });
+            console.log('[Profile] Firebase Auth profile updated successfully');
 
-            // Generate Student ID if it doesn't exist
-            const studentId = localFirestoreData.studentId || await generateStudentId();
+            // Step 2: Generate Student ID if needed
+            let studentId = localFirestoreData.studentId;
+            if (!studentId) {
+                console.log('[Profile] Generating new student ID...');
+                studentId = await generateStudentId();
+                console.log('[Profile] Generated student ID:', studentId);
+            }
 
+            // Step 3: Save to Firestore
+            console.log('[Profile] Saving to Firestore...');
             await setDoc(userDocRef, {
                 email: user.email,
                 displayName: newDisplayName,
@@ -202,14 +214,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 phone: newPhone,
                 gender: newGender,
                 studentId: studentId,
-                role: localFirestoreData.role || 'student'
+                role: localFirestoreData.role || 'student',
+                updatedAt: new Date().toISOString()
             }, { merge: true });
+
+            console.log('[Profile] Firestore save successful');
             showToast('Profile updated successfully!');
+
+            // Step 4: Refresh UI
             const updatedFirestoreDoc = await getDoc(userDocRef);
             updateProfileUI({ ...user, firestoreData: updatedFirestoreDoc.data() });
         } catch (error) {
-            console.error("Error updating profile:", error);
-            showToast('Failed to update profile.', true);
+            console.error("[Profile] Error updating profile:", error);
+            console.error("[Profile] Error code:", error.code);
+            console.error("[Profile] Error message:", error.message);
+
+            // More specific error messages
+            if (error.message?.includes('transaction')) {
+                showToast('Failed to generate student ID. Please try again.', true);
+            } else if (error.code === 'permission-denied') {
+                showToast('Permission denied. Please contact admin.', true);
+            } else {
+                showToast(`Failed to update profile: ${error.message}`, true);
+            }
         }
     });
 

@@ -1,4 +1,4 @@
-import { checkUserSession, handleLogout, db, toggleSidebar, toggleTheme } from '../main.js';
+import { checkUserSession, handleLogout, db, toggleSidebar, toggleTheme } from '../main.js?v=2';
 import { doc, getDoc } from './firebase/firebase-firestore.js';
 
 window.toggleSidebar = toggleSidebar;

@@ -1,4 +1,4 @@
-import { auth, checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar } from '../main.js';
+import { auth, checkUserSession, handleLogout, db, markNotificationsAsRead, toggleTheme, toggleSidebar } from '../main.js?v=2';
 import { doc, getDoc } from './firebase/firebase-firestore.js';
 
 window.markNotificationsAsRead = markNotificationsAsRead || function () { };
