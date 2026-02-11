@@ -94,3 +94,10 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Firebase Keys & Rules (Security)
+firebase-config.js
+firestore.rules
+storage.rules
+firebase.json
+.firebaserc
