@@ -1,18 +1,21 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/NBKRIST-Hostel_Portal-6C63FF?style=for-the-badge&logo=hotel&logoColor=white" alt="NBKRIST Hostel Portal" />
+  <img src="https://img.shields.io/badge/🏨_NBKRIST-Hostel_Portal-6C63FF?style=for-the-badge" alt="NBKRIST Hostel Portal" />
+</p>
+
+<h3 align="center">🏨 NBKRIST Hostel Portal</h3>
+
+<p align="center">
+  <i>A comprehensive, modern, and mobile-responsive hostel management system.</i><br/>
+  <sub>Full-stack serverless architecture • Firebase • Real-time sync • Glassmorphism UI</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Live-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/Status-🟢_Live-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/Firebase-Serverless-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-Styled-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
   <img src="https://img.shields.io/badge/Alpine.js-Reactive-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" />
   <img src="https://img.shields.io/badge/Netlify-Deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
-</p>
-
-<p align="center">
-  <b>A comprehensive, modern, and mobile-responsive hostel management system.</b><br/>
-  <sub>Built with a full-stack serverless architecture using Firebase.</sub>
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
 </p>
 
 <p align="center">
@@ -30,20 +33,38 @@
 
 <table>
   <tr>
-    <td align="center" width="33%">
-      <h3>🎨 Modern UI</h3>
-      <p>Glassmorphism design with dark mode, smooth animations, and responsive layouts</p>
+    <td align="center" width="25%">
+      <h3>🎨</h3>
+      <b>Modern UI</b><br/>
+      <sub>Glassmorphism • Dark Mode<br/>Smooth Animations</sub>
     </td>
-    <td align="center" width="33%">
-      <h3>⚡ Real-Time</h3>
-      <p>Live data sync powered by Cloud Firestore for instant updates across all users</p>
+    <td align="center" width="25%">
+      <h3>⚡</h3>
+      <b>Real-Time</b><br/>
+      <sub>Cloud Firestore<br/>Instant Sync</sub>
     </td>
-    <td align="center" width="33%">
-      <h3>🔒 Secure</h3>
-      <p>Firebase Auth, role-based access control, and encrypted data with audit logging</p>
+    <td align="center" width="25%">
+      <h3>🔒</h3>
+      <b>Secure</b><br/>
+      <sub>Role-Based Access<br/>Audit Logging</sub>
+    </td>
+    <td align="center" width="25%">
+      <h3>�</h3>
+      <b>Responsive</b><br/>
+      <sub>Mobile-First Design<br/>PWA Ready</sub>
     </td>
   </tr>
 </table>
+
+### 🎨 Design Philosophy
+
+> *"Premium aesthetics meet practical functionality"*
+
+- **Glassmorphism Cards** — Frosted glass effect with backdrop blur
+- **Micro-Animations** — Subtle hover effects, transitions, and loading states
+- **Dark Mode** — Full dark/light theme toggle with system preference detection
+- **Interactive Elements** — Heatmaps, real-time charts, and dynamic QR codes
+- **Toast Notifications** — Non-intrusive, mobile-responsive feedback system
 
 ---
 
@@ -281,7 +302,7 @@ git push origin feature/AmazingFeature
 
 <p align="center">
   <b>Likhith Kami</b><br/>
-  <sub>NBKRIST — CSE Department</sub>
+  <sub>NBKRIST — AI & Data Science Department</sub>
 </p>
 
 <p align="center">
@@ -299,7 +320,12 @@ git push origin feature/AmazingFeature
 ---
 
 <p align="center">
-  <sub>Built with ❤️ for NBKRIST Students</sub><br/>
+  <sub>Built with ❤️ for NBKRIST Students</sub><br/><br/>
   <img src="https://img.shields.io/badge/Made_with-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" />
   <img src="https://img.shields.io/badge/Powered_by-Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
+  <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
+</p>
+
+<p align="center">
+  <sub>⭐ Star this repo if you found it useful!</sub>
 </p>
