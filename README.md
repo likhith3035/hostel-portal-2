@@ -104,6 +104,20 @@
 
 ---
 
+## 📸 Gallery
+
+| **Student Dashboard** | **Room Booking** |
+|:---:|:---:|
+| <img src="assets/images/dashboard.png" alt="Student Dashboard" width="400"/> | <img src="assets/images/booking.png" alt="Room Booking" width="400"/> |
+| *Real-time notices & menu* | *Interactive campus map* |
+
+| **Admin Panel** | **Mobile View** |
+|:---:|:---:|
+| <img src="assets/images/admin.png" alt="Admin Dashboard" width="400"/> | <img src="assets/images/mobile.png" alt="Mobile Responsive" width="400"/> |
+| *Comprehensive management* | *Fully responsive design* |
+
+---
+
 ## 🔄 How It Works
 
 ### 🎫 Outpass Workflow
