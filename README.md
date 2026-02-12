@@ -16,6 +16,16 @@
   <img src="https://img.shields.io/badge/Alpine.js-Reactive-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" />
   <img src="https://img.shields.io/badge/Netlify-Deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
+  <br/>
+  <br/>
+  <a href="https://github.com/likhith3035/hostel-portal-2/stargazers"><img src="https://img.shields.io/github/stars/likhith3035/hostel-portal-2?style=flat-square&color=yellow" alt="GitHub stars"/></a>
+  <a href="https://github.com/likhith3035/hostel-portal-2/network/members"><img src="https://img.shields.io/github/forks/likhith3035/hostel-portal-2?style=flat-square&color=orange" alt="GitHub forks"/></a>
+  <a href="https://github.com/likhith3035/hostel-portal-2/issues"><img src="https://img.shields.io/github/issues/likhith3035/hostel-portal-2?style=flat-square&color=red" alt="GitHub issues"/></a>
+  <br/>
+  <br/>
+  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/likhith3035/hostel-portal-2">
+    <img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify">
+  </a>
 </p>
 
 <p align="center">
@@ -353,7 +363,18 @@ netlify deploy --prod
 
 ---
 
+## 📈 Star History
+
+<p align="center">
+  <a href="https://star-history.com/#likhith3035/hostel-portal-2&Date">
+    <img src="https://api.star-history.com/svg?repos=likhith3035/hostel-portal-2&type=Date" alt="Star History Chart" width="100%">
+  </a>
+</p>
+
+---
+
 ## 🤝 Contributing
+
 
 Contributions are welcome! Here's how:
 
@@ -370,6 +391,14 @@ git commit -m "Add some AmazingFeature"
 # 4. Push & open a PR
 git push origin feature/AmazingFeature
 ```
+
+---
+
+## ✨ Contributors
+
+<a href="https://github.com/likhith3035/hostel-portal-2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=likhith3035/hostel-portal-2" alt="Contributors" />
+</a>
 
 ---
 
@@ -414,7 +443,7 @@ This project is licensed under the **MIT License**.
 ```text
 MIT License
 
-Copyright (c) 2024 Likhith Kami
+Copyright (c) 2025 Likhith Kami
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
