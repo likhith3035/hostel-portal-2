@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hostel-portal-v27';
+const CACHE_NAME = 'hostel-portal-v28';
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
@@ -36,7 +36,8 @@ const ASSETS_TO_CACHE = [
     'gate-kiosk.html',
     'js/gate-kiosk.js',
     'css/style.css',
-    'assets/images/nbkrist-logo.png'
+    'assets/images/nbkrist-logo.png',
+    'assets/images/favicon.png'
     // Note: External CDN resources (Alpine, SweetAlert2, Font Awesome, Google Fonts) 
     // are intentionally excluded as they're loaded from CDN with their own caching
 ];

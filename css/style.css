@@ -54,6 +54,13 @@ body {
         0 12px 32px -8px rgba(0, 0, 0, 0.35) !important;
 }
 
+/* Theme-Adaptive Emblem: Crisp navy blue in light mode, brilliant glowing white in dark mode */
+html.dark img[src*="nbkrist-logo"]:not(.no-dark-invert),
+.dark img[src*="nbkrist-logo"]:not(.no-dark-invert) {
+    filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3)) !important;
+    -webkit-filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3)) !important;
+}
+
 /* Liquid Glass Dropdown */
 .liquid-glass-dropdown {
     background: rgba(255, 255, 255, 0.96) !important;
