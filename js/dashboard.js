@@ -44,7 +44,7 @@ const initNoticeBoard = () => {
         let html = '';
         snap.forEach(doc => {
             const d = doc.data();
-            const date = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+            const date = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
             const cat = d.category || 'General';
 
             let badgeHtml = '';

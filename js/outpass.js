@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const passId = d.passId || doc.id.substr(0, 6).toUpperCase();
 
                 if (d.status === 'Approved') {
-                    const approvedDate = d.approvedAt ? new Date(d.approvedAt.seconds * 1000).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+                    const approvedDate = d.approvedAt ? new Date(d.approvedAt.seconds * 1000).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently';
                     
                     const hasLeft = !!d.gateOutTime;
                     const hasReturned = !!d.gateInTime;

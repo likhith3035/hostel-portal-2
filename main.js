@@ -126,7 +126,8 @@ export const startClock = () => {
                 el.textContent = now.toLocaleDateString('en-US', {
                     weekday: 'short',
                     day: 'numeric',
-                    month: 'short'
+                    month: 'short',
+                    year: 'numeric'
                 });
             }
         });

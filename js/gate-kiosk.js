@@ -493,7 +493,7 @@ function generateWhatsAppAlertUrl(phone, actionType, outpass, student) {
     const actionText = actionType === 'OUT' ? 'EXITED the hostel gate' : 'safely RETURNED to the hostel';
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     const destination = outpass?.destination ? ` Destination: ${outpass.destination}.` : '';
 
     const text = `*NBKRIST Hostel Gate Alert*\n\nDear Parent, your ward *${studentName}*${studentId} has ${actionText} on ${dateStr} at ${timeStr}.${destination}\n\n- NBKRIST Security Office`;
@@ -546,8 +546,8 @@ function renderStudentResult() {
         // Helper to format string dates or timestamps
         const formatTimeVal = (val) => {
             if (!val) return '--';
-            if (val.toDate) return val.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            return new Date(val).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            if (val.toDate) return val.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return new Date(val).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         };
 
         const scheduledOut = formatTimeVal(currentOutpass.fromDate);
