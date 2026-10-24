@@ -561,23 +561,33 @@ button:disabled,
 
 /* Apply to SweetAlert2 Popup - Centered Modals Only */
 div:where(.swal2-container.swal2-center) div:where(.swal2-popup):not(.swal2-toast) {
-    animation: springPopup 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: springPopup 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     transform-origin: center center;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border-radius: 2rem !important;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.dark div:where(.swal2-container.swal2-center) div:where(.swal2-popup):not(.swal2-toast),
+html.dark div:where(.swal2-container.swal2-center) div:where(.swal2-popup):not(.swal2-toast) {
+    background: #1C1C1E !important;
+    color: #f3f4f6 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7) !important;
 }
 
 /* Backdrop Blur Transition */
 div:where(.swal2-container) {
     transition: backdrop-filter 0.3s ease !important;
-    /* Removed default blur that caused toast glitch */
 }
 
 /* Only apply blur to CENTERED modals (Popups), not Toasts (Top-End) */
 div:where(.swal2-container.swal2-center.swal2-backdrop-show) {
-    background: rgba(0, 0, 0, 0.2) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
 }
 
 /* Explicitly clear backdrop for toasts/other positions */

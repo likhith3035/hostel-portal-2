@@ -272,11 +272,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             confirmButtonText: confirmText,
             cancelButtonText: 'Cancel',
             customClass: {
-                popup: 'glass-panel rounded-[2rem] border border-white/20 shadow-xl',
-                title: 'text-xl font-bold text-gray-900 dark:text-white',
-                htmlContainer: 'text-sm text-gray-500 dark:text-gray-400',
-                confirmButton: `${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30'} text-white font-bold py-2 px-4 rounded-xl shadow-lg transition-all transform hover:scale-105`,
-                cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-4 rounded-xl transition-all ml-2'
+                popup: 'bg-white dark:bg-[#1C1C1E] text-gray-900 dark:text-white rounded-[2rem] border border-gray-100 dark:border-white/10 shadow-2xl p-6 sm:p-8',
+                title: 'text-xl font-bold text-gray-900 dark:text-white mt-2',
+                htmlContainer: 'text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed',
+                confirmButton: `${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30'} text-white font-bold py-2.5 px-5 rounded-xl shadow-lg transition-all transform hover:scale-105`,
+                cancelButton: 'bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-5 rounded-xl transition-all ml-3'
             },
             buttonsStyling: false
         });
@@ -1268,12 +1268,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadRoomMetadata = async () => {
         try {
             const roomsSnap = await getDocs(collection(db, CONSTANTS.COLLECTIONS.ROOMS));
+            roomMetadata = {};
             roomsSnap.forEach(doc => {
-                const data = doc.data();
-                roomMetadata[data.roomNumber] = {
+                const data = doc.data() || {};
+                const roomInfo = {
                     id: doc.id,
-                    hostelName: data.hostelName || 'Unknown Hostel'
+                    roomNumber: String(data.roomNumber || ''),
+                    gender: data.gender || '',
+                    hostelName: data.hostelName || (data.gender ? `${data.gender} Hostel` : 'NBKR Main Hostel')
                 };
+                if (data.roomNumber !== undefined && data.roomNumber !== null) {
+                    roomMetadata[String(data.roomNumber).trim()] = roomInfo;
+                }
+                roomMetadata[doc.id] = roomInfo;
             });
             console.log('✅ Room metadata loaded:', roomMetadata);
         } catch (error) {
@@ -1293,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error loading bookings:', error);
             if (bookingsTableBody) {
-                bookingsTableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 text-xs">Error loading bookings. Check console.</td></tr>`;
+                bookingsTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 text-xs">Error loading bookings. Check console.</td></tr>`;
             }
         }
     };
@@ -1306,41 +1313,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!bookingsTableBody) return;
         const queryText = (bookingSearch?.value || '').toLowerCase();
         const filtered = allBookingsData.filter(b =>
-            b.userEmail.toLowerCase().includes(queryText) ||
-            b.roomNumber.toLowerCase().includes(queryText)
+            (b.userName || '').toLowerCase().includes(queryText) ||
+            (b.userEmail || '').toLowerCase().includes(queryText) ||
+            String(b.roomNumber || '').toLowerCase().includes(queryText)
         );
 
         if (!filtered.length) {
-            bookingsTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400 text-xs">No records.</td></tr>`;
+            bookingsTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400 text-xs">No records found.</td></tr>`;
             return;
         }
 
         bookingsTableBody.innerHTML = filtered.map(b => {
-            const meta = roomMetadata[b.roomNumber] || { id: null, hostelName: 'Unknown' };
-            const statusBadge = `<span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${b.status === CONSTANTS.STATUS.APPROVED ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}">${b.status}</span>`;
+            const roomKey = String(b.roomNumber || '').trim();
+            const meta = roomMetadata[roomKey] || (b.roomId ? roomMetadata[b.roomId] : null) || { 
+                id: b.roomId || null, 
+                hostelName: b.hostelName || (b.gender ? `${b.gender} Hostel` : 'NBKR Main Hostel') 
+            };
+            
+            // Clean Status Badges
+            let statusBadge = '';
+            const statusUpper = (b.status || CONSTANTS.STATUS.PENDING).toUpperCase();
+            if (b.status === CONSTANTS.STATUS.APPROVED) {
+                statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Approved</span>`;
+            } else if (b.status === CONSTANTS.STATUS.VACATED) {
+                statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-gray-400">Vacated</span>`;
+            } else if (b.status === CONSTANTS.STATUS.REJECTED) {
+                statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Rejected</span>`;
+            } else {
+                statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Pending</span>`;
+            }
 
             const hasVacateRequest = b.leaveRequest && b.leaveRequest.status === 'pending';
+            const isVacated = b.status === CONSTANTS.STATUS.VACATED;
 
             return `
-                <tr class="border-b border-gray-100 dark:border-white/5 ${hasVacateRequest ? 'bg-red-50 dark:bg-red-900/10' : ''}">
+                <tr class="border-b border-gray-100 dark:border-white/5 transition-colors ${hasVacateRequest ? 'bg-red-50/60 dark:bg-red-900/10' : ''}">
                     <td class="px-6 py-4 text-sm font-bold">
                         ${escapeHTML(b.userName || b.userEmail)}
-                        ${hasVacateRequest ? '<span class="ml-2 px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-[10px] uppercase tracking-widest animate-pulse">Requested Vacate</span>' : ''}
-                        <br><span class="text-[10px] text-gray-400">${escapeHTML(b.userEmail)}</span>
+                        ${hasVacateRequest ? '<span class="ml-2 px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 text-[10px] uppercase tracking-widest font-bold animate-pulse">Requested Vacate</span>' : ''}
+                        <br><span class="text-[10px] text-gray-400 font-normal">${escapeHTML(b.userEmail)}</span>
                     </td>
-                    <td class="px-6 py-4 text-sm">Room ${escapeHTML(b.roomNumber)}<br><span class="text-[10px] text-indigo-500">${meta.hostelName}</span></td>
+                    <td class="px-6 py-4 text-sm font-semibold">
+                        Room ${escapeHTML(b.roomNumber || 'N/A')}
+                        <br><span class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">${escapeHTML(meta.hostelName)}</span>
+                    </td>
                     <td class="px-6 py-4 text-xs text-gray-500 hidden sm:table-cell">
                         ${b.timestamp ? new Date(b.timestamp.seconds * 1000).toLocaleDateString() : 'N/A'}
                     </td>
                     <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 text-right">
-                        ${b.status === CONSTANTS.STATUS.PENDING ?
-                    `<button onclick="window.handleBookingAction('approve', '${b.id}')" class="text-green-600 text-xs font-bold mr-2 hover:bg-green-50 px-2 py-1 rounded">Approve</button>` : ''}
-                        
-                        <button onclick="window.handleBookingAction('force-vacate', '${b.id}', '${b.roomId || meta.id}', '${b.bedId}')" 
-                                class="${hasVacateRequest ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : 'text-red-500 hover:bg-red-50'} text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
-                            ${hasVacateRequest ? 'Confirm Vacate' : 'Vacate'}
-                        </button>
+                        ${isVacated ? `
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 dark:text-gray-500 py-1 px-2.5 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-100 dark:border-white/5">
+                                <i class="fas fa-check text-[10px] text-green-500"></i> Vacated
+                            </span>
+                        ` : `
+                            ${b.status === CONSTANTS.STATUS.PENDING ?
+                                `<button onclick="window.handleBookingAction('approve', '${b.id}')" class="text-green-600 dark:text-green-400 text-xs font-bold mr-2 hover:bg-green-50 dark:hover:bg-green-950/30 px-2.5 py-1.5 rounded-lg transition-all">Approve</button>` : ''}
+                            
+                            <button onclick="window.handleBookingAction('force-vacate', '${b.id}', '${b.roomId || meta.id || ''}', '${b.bedId || ''}')" 
+                                    class="${hasVacateRequest ? 'bg-red-600 text-white shadow-lg shadow-red-500/30 hover:bg-red-700' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'} text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
+                                ${hasVacateRequest ? 'Confirm Vacate' : 'Vacate'}
+                            </button>
+                        `}
                     </td>
                 </tr>
             `;
@@ -1381,19 +1415,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (result.isConfirmed) {
                     window.safeAsync(async () => {
                         const bRef = doc(db, CONSTANTS.COLLECTIONS.BOOKINGS, bookingId);
-                        const roomRef = doc(db, CONSTANTS.COLLECTIONS.ROOMS, roomId);
+                        const cleanRoomId = (roomId && roomId !== 'null' && roomId !== 'undefined') ? roomId : null;
+
                         await runTransaction(db, async (t) => {
-                            const rDoc = await t.get(roomRef);
-                            const beds = rDoc.data().beds;
-                            beds[bedId].status = 'available';
-                            beds[bedId].userId = null;
-                            t.update(roomRef, { beds });
+                            if (cleanRoomId) {
+                                const roomRef = doc(db, CONSTANTS.COLLECTIONS.ROOMS, cleanRoomId);
+                                const rDoc = await t.get(roomRef);
+                                if (rDoc.exists()) {
+                                    const roomData = rDoc.data() || {};
+                                    const beds = roomData.beds || {};
+                                    if (bedId && beds[bedId]) {
+                                        beds[bedId].status = 'available';
+                                        beds[bedId].userId = null;
+                                        beds[bedId].updatedAt = new Date().toISOString();
+                                        t.update(roomRef, { beds });
+                                    }
+                                }
+                            }
                             t.update(bRef, {
                                 status: CONSTANTS.STATUS.VACATED,
                                 leaveRequest: null
                             });
                         });
-                        showToast('Vacated');
+                        showToast('Room vacated successfully');
                     }, 'Processing Vacate...');
                 }
             });
@@ -1595,11 +1639,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
             customClass: {
-                popup: 'glass-panel rounded-[2rem] border border-white/20 shadow-xl',
-                title: 'text-xl font-bold text-gray-900 dark:text-white',
-                htmlContainer: 'text-sm text-gray-500 dark:text-gray-400',
-                confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:scale-105',
-                cancelButton: 'bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 px-4 rounded-xl transition-all ml-2'
+                popup: 'bg-white dark:bg-[#1C1C1E] text-gray-900 dark:text-white rounded-[2rem] border border-gray-100 dark:border-white/10 shadow-2xl p-6 sm:p-8',
+                title: 'text-xl font-bold text-gray-900 dark:text-white mt-2',
+                htmlContainer: 'text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed',
+                confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:scale-105',
+                cancelButton: 'bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-5 rounded-xl transition-all ml-3'
             },
             buttonsStyling: false
         }).then(result => {
