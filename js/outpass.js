@@ -175,6 +175,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (d.status === 'Approved') {
                     const approvedDate = d.approvedAt ? new Date(d.approvedAt.seconds * 1000).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recently';
+                    
+                    const hasLeft = !!d.gateOutTime;
+                    const hasReturned = !!d.gateInTime;
+
+                    let progressPercent = 33;
+                    let step1Class = 'completed';
+                    let step2Class = 'completed';
+                    let step3Class = 'active';
+                    let step4Class = '';
+
+                    if (hasReturned) {
+                        progressPercent = 100;
+                        step3Class = 'completed';
+                        step4Class = 'completed';
+                    } else if (hasLeft) {
+                        progressPercent = 66;
+                        step3Class = 'completed';
+                        step4Class = 'active';
+                    }
 
                     html += `
                         <div class="relative max-w-[420px] mx-auto w-full font-['Inter'] bg-white rounded-[2rem] overflow-hidden shadow-2xl shadow-black/10 border border-white/20 animate-fade-in group hover:scale-[1.02] transition-transform duration-500" id="receipt-${doc.id}">
@@ -202,7 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="p-8 pt-10 bg-white relative">
                                 <div class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-black/5 to-transparent -mt-4"></div>
                                 
-                                <div class="flex items-center gap-5 mb-8">
+                                <div class="flex items-center gap-5 mb-6">
                                     <div class="w-[72px] h-[72px] bg-gray-50 rounded-[1.5rem] flex items-center justify-center border border-gray-100 relative shadow-inner">
                                         <i class="fas fa-user text-3xl text-gray-300"></i>
                                         <div class="absolute -bottom-1 -right-1 bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center border-[3px] border-white shadow-md">
@@ -223,7 +242,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4 mb-8">
+                                <!-- Visual Status Timeline -->
+                                <div class="mb-6 bg-gray-50/50 p-4 rounded-[1.5rem] border border-gray-100">
+                                    <div class="status-timeline">
+                                        <div class="timeline-progress">
+                                            <div class="timeline-progress-fill" style="width: ${progressPercent}%"></div>
+                                        </div>
+                                        <div class="timeline-step ${step1Class}">
+                                            <div class="timeline-dot"><i class="fas fa-file-alt"></i></div>
+                                            <div class="timeline-label">Applied</div>
+                                        </div>
+                                        <div class="timeline-step ${step2Class}">
+                                            <div class="timeline-dot"><i class="fas fa-check-circle"></i></div>
+                                            <div class="timeline-label">Approved</div>
+                                        </div>
+                                        <div class="timeline-step ${step3Class}">
+                                            <div class="timeline-dot"><i class="fas fa-sign-out-alt"></i></div>
+                                            <div class="timeline-label">Left Gate</div>
+                                        </div>
+                                        <div class="timeline-step ${step4Class}">
+                                            <div class="timeline-dot"><i class="fas fa-home"></i></div>
+                                            <div class="timeline-label">Returned</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mb-6">
                                     <div class="col-span-2 bg-gray-50/80 p-5 rounded-[1.5rem] border border-gray-100">
                                         <div class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Destination</div>
                                         <div class="font-black text-gray-900 text-lg leading-tight truncate">${escapeHTML(d.destination)}</div>
@@ -256,7 +300,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>`;
 
-                    // Generate QR Code after a slight delay to ensure DOM is ready
                     // Generate QR Code with safety checks
                     setTimeout(() => {
                         const qrContainer = document.getElementById(`qrcode-${doc.id}`);
@@ -289,31 +332,72 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const color = isRej ? 'red' : 'yellow';
                     const icon = isRej ? 'fa-times-circle' : 'fa-clock';
 
+                    let progressPercent = 0;
+                    let step1Class = 'active';
+                    let step2Class = '';
+                    let step2Label = 'Review';
+                    let step2Icon = 'fa-clock';
+
+                    if (isRej) {
+                        progressPercent = 33;
+                        step1Class = 'completed';
+                        step2Class = 'active text-red-500';
+                        step2Label = 'Rejected';
+                        step2Icon = 'fa-times-circle';
+                    }
+
                     html += `
-                        <div class="glass-panel p-6 rounded-[2rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:scale-[1.01] transition-all duration-300 border border-white/20 hover:border-${color}-500/30 animate-fade-in relative overflow-hidden">
+                        <div class="glass-panel p-6 rounded-[2rem] flex flex-col gap-5 border border-white/20 hover:border-${color}-500/30 animate-fade-in relative overflow-hidden group hover:scale-[1.01] transition-all duration-300">
                              <div class="absolute -right-10 -top-10 w-32 h-32 bg-${color}-500/5 rounded-full blur-3xl group-hover:bg-${color}-500/10 transition-all"></div>
                             
-                            <div class="flex items-center gap-5 relative z-10 w-full md:w-auto">
-                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-${color}-50 dark:bg-${color}-500/10 text-${color}-500 text-xl shadow-inner border border-${color}-100 dark:border-${color}-500/20">
-                                    <i class="fas ${icon}"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-3 mb-1.5">
-                                        <span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 border border-${color}-100 dark:border-${color}-500/20 tracking-wider shadow-sm">${d.status}</span>
-                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">${d.destination}</span>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10 w-full">
+                                <div class="flex items-center gap-5 w-full md:w-auto">
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-${color}-50 dark:bg-${color}-500/10 text-${color}-500 text-xl shadow-inner border border-${color}-100 dark:border-${color}-500/20">
+                                        <i class="fas ${icon}"></i>
                                     </div>
-                                    <h4 class="font-black text-lg text-gray-900 dark:text-gray-100 leading-tight truncate">"${d.reason || 'Personal Work'}"</h4>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-3 mb-1.5">
+                                            <span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 border border-${color}-100 dark:border-${color}-500/20 tracking-wider shadow-sm">${d.status}</span>
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">${d.destination}</span>
+                                        </div>
+                                        <h4 class="font-black text-lg text-gray-900 dark:text-gray-100 leading-tight truncate">"${d.reason || 'Personal Work'}"</h4>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 pl-16 md:pl-0">
+                                    ${d.status === CONSTANTS.STATUS.PENDING ? `
+                                    <button class="withdraw-btn flex-1 md:flex-none px-6 py-3 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-red-500/30 active:scale-95 border border-red-100 dark:border-red-500/20" data-id="${doc.id}">
+                                        Withdraw
+                                    </button>` : `
+                                    <button class="delete-outpass-btn w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex items-center justify-center" data-id="${doc.id}">
+                                        <i class="fas fa-trash-alt text-sm"></i>
+                                    </button>`}
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 relative z-10 pl-16 md:pl-0">
-                                ${d.status === CONSTANTS.STATUS.PENDING ? `
-                                <button class="withdraw-btn flex-1 md:flex-none px-6 py-3 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-red-500/30 active:scale-95 border border-red-100 dark:border-red-500/20" data-id="${doc.id}">
-                                    Withdraw
-                                </button>` : `
-                                <button class="delete-outpass-btn w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all flex items-center justify-center" data-id="${doc.id}">
-                                    <i class="fas fa-trash-alt text-sm"></i>
-                                </button>`}
+
+                            <!-- Visual Status Timeline for Pending/Rejected -->
+                            <div class="w-full bg-gray-50/50 dark:bg-black/10 p-4 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10">
+                                <div class="status-timeline">
+                                    <div class="timeline-progress">
+                                        <div class="timeline-progress-fill" style="width: ${progressPercent}%"></div>
+                                    </div>
+                                    <div class="timeline-step ${step1Class}">
+                                        <div class="timeline-dot"><i class="fas fa-file-alt"></i></div>
+                                        <div class="timeline-label">Applied</div>
+                                    </div>
+                                    <div class="timeline-step ${step2Class}">
+                                        <div class="timeline-dot"><i class="fas ${step2Icon}"></i></div>
+                                        <div class="timeline-label">${step2Label}</div>
+                                    </div>
+                                    <div class="timeline-step">
+                                        <div class="timeline-dot"><i class="fas fa-sign-out-alt"></i></div>
+                                        <div class="timeline-label">Left Gate</div>
+                                    </div>
+                                    <div class="timeline-step">
+                                        <div class="timeline-dot"><i class="fas fa-home"></i></div>
+                                        <div class="timeline-label">Returned</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>`;
                 }

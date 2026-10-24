@@ -17,39 +17,7 @@ window.markNotificationsAsRead = markNotificationsAsRead;
 window.toggleTheme = toggleTheme;
 window.toggleSidebar = toggleSidebar;
 
-// Generate unique Student ID with Firestore transaction (atomic)
-async function generateStudentId() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-
-    const counterRef = doc(db, 'metadata', 'studentIdCounter');
-
-    // Use Firestore transaction for atomic increment
-    try {
-        const nextNumber = await runTransaction(db, async (transaction) => {
-            const counterDoc = await transaction.get(counterRef);
-            let current = 1;
-
-            if (counterDoc.exists()) {
-                current = (counterDoc.data().current || 0) + 1;
-            }
-
-            transaction.set(counterRef, { current }, { merge: true });
-            return current;
-        });
-
-        // Format as 4-digit number
-        const sequentialNum = String(nextNumber).padStart(4, '0');
-        return `${year}-${month}-${day}-NBKRIST-${sequentialNum}`;
-    } catch (error) {
-        console.error("Transaction failed, using timestamp-based ID:", error);
-        // Fallback to timestamp-based unique ID
-        const timestamp = Date.now().toString().slice(-4);
-        return `${year}-${month}-${day}-NBKRIST-${timestamp}`;
-    }
-}
+// Manual Roll number verification and entry is used instead of automatic generation
 
 // Global function for redirect to personal tab
 window.editProfile = () => {
@@ -99,6 +67,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneInput = document.getElementById('phone');
     const genderInput = document.getElementById('gender');
     const photoURLInput = document.getElementById('photoURL');
+    const studentIdInput = document.getElementById('studentId');
+    const studyingYearInput = document.getElementById('studyingYear');
+    const branchInput = document.getElementById('branch');
 
     // Display Elements
     const avatarPreview = document.getElementById('profile-avatar-preview');
@@ -113,6 +84,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (emailInput) emailInput.value = userData?.email || '';
         if (displayNameInput) displayNameInput.value = userData?.firestoreData?.displayName || userData?.displayName || '';
         if (photoURLInput) photoURLInput.value = userData?.firestoreData?.photoURL || userData?.photoURL || '';
+
+        // Auto-detect from email if not already saved in Firestore
+        let rollVal = userData?.firestoreData?.studentId || '';
+        let yearVal = userData?.firestoreData?.studyingYear || '';
+        let branchVal = userData?.firestoreData?.branch || '';
+
+        if (userData?.email) {
+            const emailPrefix = userData.email.split('@')[0];
+            const rollNumberPattern = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i;
+            if (rollNumberPattern.test(emailPrefix)) {
+                if (!rollVal) rollVal = emailPrefix.toLowerCase();
+            }
+        }
+
+        if (studentIdInput) studentIdInput.value = rollVal;
+        if (studyingYearInput) studyingYearInput.value = yearVal;
+        if (branchInput) branchInput.value = branchVal;
+
         if (namePreview) namePreview.textContent = name;
         if (emailPreview) emailPreview.textContent = userData?.email || 'Not logged in';
         if (rolePreview) rolePreview.textContent = userData?.firestoreData?.role || 'Student';
@@ -129,36 +118,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         // --- Digital ID Update ---
         const idIncomplete = document.getElementById('id-incomplete-state');
         const idComplete = document.getElementById('id-complete-state');
-        const idName = document.getElementById('id-card-name');
-        const idRole = document.getElementById('id-card-role');
+        const idNameFront = document.getElementById('id-card-name-front');
+        const idRoleFront = document.getElementById('id-card-role-front');
+        const idAvatar = document.getElementById('id-card-avatar');
+        const idPhone = document.getElementById('id-card-phone');
         const idStudentId = document.getElementById('id-card-student-id');
         const qrContainer = document.getElementById('qrcode-container');
 
-        // Check if profile is complete (Name, Phone, Photo required)
-        const isProfileComplete = userData?.displayName && userData?.firestoreData?.phone && userData?.photoURL && userData.photoURL.length > 5;
+        // Check if profile is complete (Name, Phone, Photo, Roll, Branch, Year required)
+        const hasStudentId = userData?.firestoreData?.studentId && String(userData.firestoreData.studentId).trim() !== '';
+        const hasBranch = userData?.firestoreData?.branch && String(userData.firestoreData.branch).trim() !== '';
+        const hasYear = userData?.firestoreData?.studyingYear && String(userData.firestoreData.studyingYear).trim() !== '';
+        const isProfileComplete = userData?.displayName && userData?.firestoreData?.phone && userData?.photoURL && userData.photoURL.length > 5 && hasStudentId && hasBranch && hasYear;
 
         // Redirect function for card click
         window.openDetailsPage = () => {
             if (userData?.uid) window.open(`id-card.html?uid=${userData.uid}`, '_blank');
         };
 
-
-
         if (idIncomplete && idComplete) {
             if (isProfileComplete) {
                 idIncomplete.classList.add('hidden');
                 idComplete.classList.remove('hidden');
 
-                if (idName) idName.textContent = name;
-                if (idRole && userData?.firestoreData?.role) idRole.textContent = userData.firestoreData.role;
-                if (idStudentId && userData?.firestoreData?.studentId) {
-                    idStudentId.textContent = userData.firestoreData.studentId;
+                if (idNameFront) idNameFront.textContent = name;
+                if (idRoleFront && userData?.firestoreData?.role) idRoleFront.textContent = userData.firestoreData.role;
+                if (idAvatar) idAvatar.src = photo;
+                if (idPhone && userData?.firestoreData?.phone) idPhone.textContent = userData.firestoreData.phone;
+                if (idStudentId) {
+                    idStudentId.textContent = rollVal || '#ID';
                 }
+                const idYear = document.getElementById('id-card-year');
+                const idBranch = document.getElementById('id-card-branch');
+                if (idYear) idYear.textContent = yearVal || '-';
+                if (idBranch) idBranch.textContent = branchVal || '-';
 
                 if (qrContainer && userData?.uid) {
                     const verificationUrl = `https://nbkristhostelportal.netlify.app/id-card.html?uid=${userData.uid}`;
                     // Use Image API for reliability (works even if tab is hidden)
-                    qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(verificationUrl)}&color=007AFF&bgcolor=ffffff" class="w-full h-full object-contain" alt="ID QR">`;
+                    qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(verificationUrl)}&color=007AFF&bgcolor=ffffff" class="w-full h-full object-contain pointer-events-none" alt="ID QR">`;
+                }
+
+                // Add 3D card flip event listener
+                const idCardInner = document.getElementById('id-card-inner');
+                if (idCardInner && !idCardInner.dataset.flipBound) {
+                    idCardInner.addEventListener('click', (e) => {
+                        // Prevent flipping if clicked on buttons or links
+                        if (e.target.closest('button') || e.target.closest('a')) return;
+                        idCardInner.classList.toggle('flipped');
+                    });
+                    idCardInner.dataset.flipBound = "true";
                 }
             } else {
                 idUniqueState(idIncomplete, idComplete);
@@ -196,30 +205,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         const newPhotoURL = photoURLInput?.value.trim() || '';
         const newPhone = phoneInput?.value.trim() || '';
         const newGender = genderInput?.value || '';
+        const newStudentId = studentIdInput?.value.trim() || '';
+        const newStudyingYear = studyingYearInput?.value || '';
+        const newBranch = branchInput?.value || '';
+
+        // Validate Roll Number
+        const rollNumberPattern = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i;
+        if (!newStudentId) {
+            return showToast('Roll / Registration Number is required.', true);
+        }
+        if (!rollNumberPattern.test(newStudentId)) {
+            return showToast('Invalid Roll Number format. Should be like 23kb1a3035.', true);
+        }
 
         try {
             // Step 1: Update Firebase Auth profile
             await updateProfile(user, { displayName: newDisplayName, photoURL: newPhotoURL });
             console.log('[Profile] Firebase Auth profile updated successfully');
 
-            // Step 2: Generate Student ID if needed
-            let studentId = localFirestoreData.studentId;
-            if (!studentId) {
-                console.log('[Profile] Generating new student ID...');
-                studentId = await generateStudentId();
-                console.log('[Profile] Generated student ID:', studentId);
-            }
-
-            // Step 3: Save to Firestore
+            // Step 2: Save to Firestore
             console.log('[Profile] Saving to Firestore...');
+            const emailLower = user.email ? user.email.toLowerCase().trim() : '';
+            const emailPrefix = emailLower.split('@')[0];
+            const isRoll = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i.test(emailPrefix);
+            const isEmailAdmin = !isRoll && (
+                emailLower === 'kamilikhith@gmail.com' ||
+                emailLower === 'admin@nbkrist.org' ||
+                emailLower === 'warden@nbkrist.org' ||
+                (emailLower.endsWith('@nbkrist.org') && (emailPrefix === 'admin' || emailPrefix === 'warden' || emailPrefix.startsWith('admin') || emailPrefix.startsWith('warden')))
+            );
+            const cleanStudentId = (newStudentId || '').trim().toUpperCase();
             await setDoc(userDocRef, {
                 email: user.email,
                 displayName: newDisplayName,
                 photoURL: newPhotoURL,
                 phone: newPhone,
                 gender: newGender,
-                studentId: studentId,
-                role: localFirestoreData.role || 'student',
+                studentId: cleanStudentId,
+                studentIdLast4: cleanStudentId.slice(-4),
+                studyingYear: newStudyingYear,
+                branch: newBranch,
+                role: isEmailAdmin ? 'admin' : (localFirestoreData.role || 'student'),
                 updatedAt: new Date().toISOString()
             }, { merge: true });
 

@@ -202,7 +202,7 @@ style.textContent = `
         overflow-x: hidden;
         margin: 0;
         padding: 0;
-        background-color: #F2F2F7;
+        background-color: #FAF9F6;
         transition: background-color 0.5s ease;
     }
 
@@ -706,8 +706,10 @@ const checkSoftGate = (user, userData) => {
     const hasId = userData && userData.studentId && userData.studentId !== 'undefined' && String(userData.studentId).trim() !== '';
     const hasName = userData && userData.displayName && userData.displayName !== 'undefined' && String(userData.displayName).trim() !== '';
     const hasPhone = userData && userData.phone && userData.phone !== 'undefined' && String(userData.phone).trim() !== '';
+    const hasBranch = userData && userData.branch && userData.branch !== 'undefined' && String(userData.branch).trim() !== '';
+    const hasYear = userData && userData.studyingYear && userData.studyingYear !== 'undefined' && String(userData.studyingYear).trim() !== '';
 
-    const isProfileComplete = hasId && hasName && hasPhone;
+    const isProfileComplete = hasId && hasName && hasPhone && hasBranch && hasYear;
     const isProfilePage = window.location.pathname.includes('profile.html');
 
     // Restricted Pages where Popup is MANDATORY even if banner skipped
@@ -789,11 +791,15 @@ const setupCommonUI = (user, role, userData) => {
     });
 
     // 2. Populate Avatar
-    const avatarUrl = userData?.photoURL || user.photoURL || `https://placehold.co/100x100/E2E8F0/4A5568?text=${name.charAt(0).toUpperCase()}`;
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E2E8F0&color=4A5568&size=100&bold=true`;
+    const avatarUrl = userData?.photoURL || user.photoURL || defaultAvatar;
     const avatarElements = ['user-avatar', 'user-avatar-desktop', 'profile-avatar-preview'];
     avatarElements.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.src = avatarUrl;
+        if (el) {
+            el.src = avatarUrl;
+            el.onerror = () => { el.onerror = null; el.src = defaultAvatar; };
+        }
     });
 
     // 3. Admin Specific UI
@@ -850,7 +856,16 @@ if (window.currentUser) {
     // We might need to fetch userData if it's not fully there, but auth-guard sets window.currentUserData
     // We try to use what we have. If role is missing, default to student.
     const userData = window.currentUserData || {};
-    const role = userData.role || 'student';
+    const emailLower = window.currentUser?.email?.toLowerCase().trim() || '';
+    const emailPrefix = emailLower.split('@')[0];
+    const isRoll = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i.test(emailPrefix);
+    const isEmailAdmin = !isRoll && (
+        emailLower === 'kamilikhith@gmail.com' ||
+        emailLower === 'admin@nbkrist.org' ||
+        emailLower === 'warden@nbkrist.org' ||
+        (emailLower.endsWith('@nbkrist.org') && (emailPrefix === 'admin' || emailPrefix === 'warden' || emailPrefix.startsWith('admin') || emailPrefix.startsWith('warden')))
+    );
+    const role = (userData.role === 'admin' || isEmailAdmin) ? 'admin' : (userData.role || 'student');
 
     checkSoftGate(window.currentUser, userData);
     setupNotificationListener(window.currentUser);
@@ -903,3 +918,25 @@ window.triggerInlineLogin = triggerLoginModal;
 // Auto-start systems
 startClock();
 setTimeout(initToastSystem, 100);
+
+// Page Enter Transition — auto-apply to main content
+document.addEventListener('DOMContentLoaded', () => {
+    const mainEl = document.querySelector('main') || document.querySelector('.flex-1');
+    if (mainEl) {
+        mainEl.classList.add('page-enter');
+    }
+});
+
+// Smooth page exit transition on navigation
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    // Only intercept internal .html links, not anchors, external, or JS links
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('javascript') || href.startsWith('mailto') || href.startsWith('tel') || link.target === '_blank') return;
+
+    e.preventDefault();
+    document.body.style.transition = 'opacity 0.15s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => { window.location.href = href; }, 150);
+});

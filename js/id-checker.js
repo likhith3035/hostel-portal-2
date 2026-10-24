@@ -88,18 +88,28 @@ window.verifyManual = async () => {
     }
 
     try {
-        // Query Firestore for student with matching last 4 digits
         const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('studentId', '>=', ''), where('studentId', '<=', '\uf8ff'));
-        const snapshot = await getDocs(q);
-
         let found = null;
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.studentId && data.studentId.endsWith(last4)) {
-                found = { id: doc.id, ...data };
-            }
-        });
+
+        // 1. Targeted indexed query by studentIdLast4 (1 read)
+        const qIndexed = query(usersRef, where('studentIdLast4', '==', last4));
+        const indexSnap = await getDocs(qIndexed);
+        if (!indexSnap.empty) {
+            const docSnap = indexSnap.docs[0];
+            found = { id: docSnap.id, ...docSnap.data() };
+        }
+
+        // 2. Fallback for legacy profiles not yet migrated
+        if (!found) {
+            const qFallback = query(usersRef, where('studentId', '>=', ''), where('studentId', '<=', '\uf8ff'));
+            const snapshot = await getDocs(qFallback);
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                if (data.studentId && data.studentId.endsWith(last4)) {
+                    found = { id: docSnap.id, ...data };
+                }
+            });
+        }
 
         if (found) {
             displayStudentDetails(found);
@@ -137,6 +147,11 @@ function displayStudentDetails(student) {
     document.getElementById('detail-role').textContent = student.role || 'Student';
     document.getElementById('detail-phone').textContent = student.phone || 'Not Provided';
     document.getElementById('detail-email').textContent = student.email || 'No Email';
+
+    const detailYear = document.getElementById('detail-year');
+    const detailBranch = document.getElementById('detail-branch');
+    if (detailYear) detailYear.textContent = student.studyingYear || 'Not Specified';
+    if (detailBranch) detailBranch.textContent = student.branch || 'Not Specified';
 
     if (student.photoURL) {
         document.getElementById('detail-photo').src = student.photoURL;

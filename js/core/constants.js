@@ -18,7 +18,8 @@ export const COLLECTIONS = {
     MEAL_RATINGS: 'mealRatings',
     NOTICES: 'notices',
     NOTIFICATIONS: 'notifications',
-    AUDIT_LOGS: 'audit_logs'
+    AUDIT_LOGS: 'audit_logs',
+    SETTINGS: 'settings'
 };
 
 export const STATUS = {

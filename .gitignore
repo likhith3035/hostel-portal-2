@@ -95,9 +95,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Firebase Keys & Rules (Security)
+# Firebase Credentials (keep active keys private, track template)
 firebase-config.js
-firestore.rules
-storage.rules
-firebase.json
-.firebaserc
+

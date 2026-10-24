@@ -68,203 +68,79 @@
         <div class="orb orb-2"></div>
     </div>
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="min-h-screen pb-12">
 
-        <aside
-            class="hidden lg:flex w-72 flex-col glass-panel border-r border-white/20 z-50 m-5 rounded-[2.5rem] h-[calc(100vh-2.5rem)]">
-            <div class="p-8 flex items-center gap-4">
-                <img src="https://www.nbkrist.co.in/images/Emb.jpg" class="w-10 h-10 rounded-lg shadow-sm" alt="Logo">
-                <div>
-                    <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white">NBKRIST</h1>
-                    <p class="text-[10px] font-semibold text-iosBlue uppercase tracking-wider">Student Portal</p>
+        <!-- Top Premium Navigation Bar -->
+        <nav class="sticky top-0 z-50 glass-panel border border-white/20 m-4 rounded-[2rem] shadow-lg backdrop-blur-xl bg-white/60 dark:bg-zinc-900/60 relative">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+                
+                <!-- Back to Dashboard button -->
+                <a href="index.html" class="flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-white/5 hover:bg-iosBlue hover:text-white dark:hover:bg-iosBlue dark:hover:text-white rounded-[1.2rem] transition-all duration-300 shadow-sm border border-gray-150 dark:border-white/5 active:scale-95 spring-click">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+                
+                <!-- Center Logo & Title -->
+                <div class="flex items-center gap-3">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-8 h-8 object-contain" alt="Logo">
+                    <span class="font-extrabold text-sm sm:text-base tracking-tight text-gray-900 dark:text-white hidden md:inline-block">NBKRIST Student Portal</span>
                 </div>
-            </div>
-
-            <nav class="flex-1 px-4 space-y-1" id="sidebar-nav">
-                <a href="index.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-grid-2 w-5 text-center"></i> <span>Overview</span>
-                </a>
-                <a href="profile.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-bold bg-gradient-to-r from-iosBlue to-blue-500 text-white shadow-lg shadow-blue-500/20">
-                    <i class="fas fa-user-circle w-5 text-center"></i> <span>My Profile</span>
-                    <i class="fas fa-chevron-right ml-auto text-[10px] opacity-70"></i>
-                </a>
-                <a href="about.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-info-circle w-5 text-center"></i> <span>About</span>
-                </a>
-                <a href="mess-menu.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-utensils w-5 text-center"></i> <span>Food Menu</span>
-                </a>
-                <a href="booking.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-bed w-5 text-center"></i> <span>Room Booking</span>
-                </a>
-                <a href="complaints.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-comment-alt w-5 text-center"></i> <span>Complaints</span>
-                </a>
-                <a href="rules.html"
-                    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all text-sm font-semibold">
-                    <i class="fas fa-book w-5 text-center"></i> <span>Rules</span>
-                </a>
-            </nav>
-
-            <div class="p-4 mt-auto">
-                <button id="logout-sidebar"
-                    class="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all text-sm font-semibold group">
-                    <i class="fas fa-sign-out-alt w-5 text-center group-hover:-translate-x-1 transition-transform"></i>
-                    Sign Out
-                </button>
-            </div>
-        </aside>
-
-        <main class="flex-1 overflow-y-auto h-full scroll-smooth p-4 lg:p-6">
-
-
-            <!-- Mobile Header Bar -->
-            <header class="lg:hidden flex justify-center items-center mb-6 px-4 py-3 sticky top-0 z-30">
-                <div
-                    class="glass-panel rounded-full px-3 py-2 flex items-center gap-2 shadow-lg border border-white/20">
-                    <a href="index.html"
-                        class="w-9 h-9 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors flex-shrink-0">
-                        <i class="fas fa-arrow-left"></i>
-                    </a>
-
-                    <div class="flex items-center gap-1.5 px-2 min-w-0">
-                        <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
-                            class="w-6 h-6 opacity-60 flex-shrink-0">
-                        <span
-                            class="font-bold text-gray-700 dark:text-white tracking-tight text-sm truncate">NBKRIST</span>
-                    </div>
-
-                    <button onclick="toggleTheme()"
-                        class="w-8 h-8 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center text-gray-400 hover:text-iosBlue transition-colors flex-shrink-0">
-                        <i class="fas fa-gear text-sm"></i>
-                    </button>
-
-                    <div class="relative flex-shrink-0" x-data="{ open: false }">
-                        <button @click="open = !open; markNotificationsAsRead()"
-                            class="w-8 h-8 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center text-gray-400 hover:text-iosBlue transition-colors relative">
-                            <i class="fas fa-bell text-sm"></i>
-                            <span id="unread-indicator"
-                                class="hidden absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-                        <div x-show="open" @click.away="open = false" x-transition.origin.top.right
-                            class="fixed left-4 right-4 top-20 glass-panel bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-xl py-2 z-[100] backdrop-blur-xl border border-white/50 dark:border-white/10">
-                            <div
-                                class="px-5 py-3 border-b border-gray-100 dark:border-gray-700/50 font-bold text-sm text-gray-900 dark:text-white flex justify-between items-center">
-                                <span>Notifications</span>
-                                <button onclick="window.location.reload()" class="text-xs text-primary"><i
-                                        class="fas fa-sync"></i></button>
-                            </div>
-                            <ul id="notifications-list" class="max-h-64 overflow-y-auto">
-                                <li class="px-5 py-4 text-center text-xs text-gray-400">Loading...</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="relative flex-shrink-0" x-data="{ open: false }">
-                        <button @click="open = !open"
-                            class="w-10 h-10 rounded-full overflow-hidden border-2 border-iosBlue/50 shadow-md ring-2 ring-iosBlue/20 flex-shrink-0">
-                            <img id="user-avatar" src="https://placehold.co/100" class="w-full h-full object-cover">
-                        </button>
-                        <div x-show="open" @click.away="open = false" x-transition
-                            class="absolute right-0 top-12 w-64 liquid-glass-dropdown p-2 shadow-2xl z-[100] border border-white/20 origin-top-right rounded-3xl">
-                            <div class="p-3 border-b border-gray-100 dark:border-white/10 mb-1">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Signed in as</p>
-                                <p class="font-bold text-gray-900 dark:text-white truncate" id="user-name-dropdown">
-                                    Guest</p>
-                            </div>
-                            <div class="space-y-1" id="profile-dropdown-list">
-                                <a href="profile.html"
-                                    class="flex items-center px-3 py-2 text-xs font-semibold rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"><i
-                                        class="fas fa-user-circle w-4 mr-2 text-gray-400"></i> My Profile</a>
-                            </div>
-                            <div class="mt-1 pt-1 border-t border-gray-100 dark:border-white/10">
-                                <button id="logout-header"
-                                    class="w-full flex items-center px-3 py-2 text-xs font-bold text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"><i
-                                        class="fas fa-power-off w-4 mr-2"></i> Log Out</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Desktop Header -->
-            <header
-                class="hidden lg:flex justify-between items-center mb-6 px-4 py-2 sticky top-0 z-30 transition-all gap-4">
-                <div class="flex items-center gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h2>
-                        <div class="flex items-center gap-2">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="current-date">Loading...
-                            </p>
-                            <span class="text-gray-300 dark:text-gray-700">|</span>
-                            <p class="text-sm font-bold text-iosBlue tabular-nums" id="clock-time">00:00</p>
-                            <p class="text-[10px] font-bold text-primary uppercase" id="am-pm"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleTheme()"
-                        class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors">
+                
+                <!-- Right Controls: Theme, Notification & User Avatar -->
+                <div class="flex items-center gap-3">
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl bg-white/80 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors border border-gray-150 dark:border-white/5 spring-click">
                         <i class="fas fa-sun dark:hidden"></i>
                         <i class="fas fa-moon hidden dark:block"></i>
                     </button>
-
+                    
+                    <!-- Notifications -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open; markNotificationsAsRead()"
-                            class="w-12 h-12 rounded-full glass-panel flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors relative">
+                        <button @click="open = !open; markNotificationsAsRead()" class="w-10 h-10 rounded-xl bg-white/80 dark:bg-white/5 flex items-center justify-center text-gray-500 hover:text-iosBlue transition-colors border border-gray-150 dark:border-white/5 relative spring-click">
                             <i class="fas fa-bell"></i>
-                            <span id="unread-indicator-desktop"
-                                class="hidden absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+                            <span id="unread-indicator" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
+                            <span id="unread-indicator-desktop" class="hidden absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
                         </button>
-                        <div x-show="open" @click.away="open = false" x-transition.origin.top.right
-                            class="absolute right-0 top-full mt-3 w-80 glass-panel bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-xl py-2 z-[100] backdrop-blur-xl border border-white/50 dark:border-white/10">
-                            <div
-                                class="px-5 py-3 border-b border-gray-100 dark:border-gray-700/50 font-bold text-sm text-gray-900 dark:text-white flex justify-between items-center">
+                        <div x-show="open" @click.away="open = false" x-transition.origin.top.right class="absolute right-0 mt-3 w-80 glass-panel bg-white/95 dark:bg-slate-800/95 rounded-2xl shadow-xl py-2 z-[100] backdrop-blur-xl border border-white/50 dark:border-white/10">
+                            <div class="px-5 py-3 border-b border-gray-100 dark:border-gray-700/50 font-bold text-sm text-gray-900 dark:text-white flex justify-between items-center">
                                 <span>Notifications</span>
-                                <button onclick="window.location.reload()" class="text-xs text-primary"><i
-                                        class="fas fa-sync"></i></button>
+                                <button onclick="window.location.reload()" class="text-xs text-primary"><i class="fas fa-sync"></i></button>
                             </div>
-                            <ul id="notifications-list-desktop" class="max-h-64 overflow-y-auto">
-                                <li class="px-5 py-4 text-center text-xs text-gray-400">Loading...</li>
+                            <ul id="notifications-list" class="max-h-64 overflow-y-auto">
+                                <li class="px-5 py-4"><div class="skeleton skeleton-text w-3/4 mx-auto"></div></li>
                             </ul>
+                            <ul id="notifications-list-desktop" class="hidden"></ul>
                         </div>
                     </div>
 
+                    <!-- User Avatar & Dropdown -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open"
-                            class="w-12 h-12 rounded-full glass-panel flex items-center justify-center relative spring-click p-0.5 hover:scale-105 transition-all active:scale-95">
-                            <img id="user-avatar-desktop" src="https://placehold.co/100"
-                                class="w-full h-full rounded-full object-cover shadow-sm">
+                        <button @click="open = !open" class="w-10 h-10 rounded-xl overflow-hidden border border-iosBlue/30 hover:scale-105 active:scale-95 transition-all spring-click flex items-center justify-center">
+                            <img id="user-avatar" src="https://ui-avatars.com/api/?name=U&background=E2E8F0&color=4A5568&size=100" class="w-full h-full object-cover">
+                            <img id="user-avatar-desktop" src="https://ui-avatars.com/api/?name=U&background=E2E8F0&color=4A5568&size=100" class="hidden">
                         </button>
-                        <div x-show="open" @click.away="open = false" x-transition
-                            class="absolute right-0 top-12 w-64 liquid-glass-dropdown p-2 shadow-2xl z-[100] border border-white/20 origin-top-right rounded-3xl">
-                            <div class="p-3 border-b border-gray-100 dark:border-white/10 mb-1">
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-3 w-60 liquid-glass-dropdown p-2 shadow-2xl z-[100] border border-white/20 origin-top-right rounded-3xl">
+                            <div class="p-4 border-b border-gray-100 dark:border-white/10 mb-1">
                                 <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Signed in as</p>
-                                <p class="font-bold text-gray-900 dark:text-white truncate"
-                                    id="user-name-dropdown-desktop">Guest</p>
+                                <p class="font-bold text-gray-900 dark:text-white truncate text-sm" id="user-name-dropdown">Guest</p>
+                                <p class="hidden" id="user-name-dropdown-desktop">Guest</p>
                             </div>
-                            <div class="space-y-1">
-                                <a href="profile.html"
-                                    class="flex items-center px-3 py-2 text-xs font-semibold rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"><i
-                                        class="fas fa-user-circle w-4 mr-2 text-gray-400"></i> My Profile</a>
-                            </div>
-                            <div class="mt-1 pt-1 border-t border-gray-100 dark:border-white/10">
-                                <button id="logout-header-desktop"
-                                    class="w-full flex items-center px-3 py-2 text-xs font-bold text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"><i
-                                        class="fas fa-power-off w-4 mr-2"></i> Log Out</button>
+                            <div class="p-1">
+                                <button id="logout-header" class="w-full flex items-center px-4 py-3 text-xs font-black uppercase tracking-wider text-red-500 rounded-2xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left spring-click">
+                                    <i class="fas fa-power-off w-5 text-center text-sm mr-2"></i> Log Out
+                                </button>
+                                <!-- Hidden logout buttons to satisfy script selectors -->
+                                <button id="logout-sidebar" class="hidden"></button>
+                                <button id="logout-header-desktop" class="hidden"></button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </header>
 
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto px-4 py-4 md:py-8">
             <div class="max-w-5xl mx-auto space-y-8">
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -285,7 +161,7 @@
                                 </div>
                                 <img id="profile-avatar-preview"
                                     class="relative w-full h-full rounded-full object-cover border-[4px] border-white dark:border-white/10 shadow-2xl"
-                                    src="https://placehold.co/100">
+                                    src="https://ui-avatars.com/api/?name=U&background=E2E8F0&color=4A5568&size=100">
                                 <span
                                     class="absolute bottom-1 right-1 w-7 h-7 bg-[#34C759] border-[4px] border-white dark:border-[#1c1c1e] rounded-full shadow-sm z-20"></span>
                             </div>
@@ -333,7 +209,7 @@
                                         Name</label>
                                     <div class="relative">
                                         <input type="text" id="displayName"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-5 px-5 pl-12 pr-4 font-bold text-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-5 px-5 pl-12 pr-4 font-bold text-lg text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all"
                                             placeholder="Your Name">
                                         <i
                                             class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -347,7 +223,7 @@
                                         Number</label>
                                     <div class="relative">
                                         <input type="tel" id="phone"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-5 px-5 pl-12 pr-4 font-bold text-lg text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-5 px-5 pl-12 pr-4 font-bold text-lg text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all"
                                             placeholder="+91 ...">
                                         <i
                                             class="fas fa-phone absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -362,7 +238,7 @@
                                             (Read Only)</label>
                                         <div class="relative">
                                             <input type="email" id="email"
-                                                class="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-500 cursor-not-allowed"
+                                                class="w-full bg-gray-100 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-500 dark:text-slate-400 cursor-not-allowed"
                                                 disabled>
                                             <i
                                                 class="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
@@ -374,7 +250,7 @@
                                             class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Gender</label>
                                         <div class="relative">
                                             <select id="gender"
-                                                class="w-full appearance-none bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all">
+                                                class="w-full appearance-none bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all">
                                                 <option value="" disabled selected>Select Gender</option>
                                                 <option value="Male">Male</option>
                                                 <option value="Female">Female</option>
@@ -387,13 +263,70 @@
                                     </div>
                                 </div>
 
+                                <!-- 2-Column: Roll/Reg No + Studying Year -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                                    <div class="premium-input-group group">
+                                        <label
+                                            class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Roll / Registration Number</label>
+                                        <div class="relative">
+                                            <input type="text" id="studentId"
+                                                class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all"
+                                                placeholder="e.g. 23kb1a3035" required>
+                                            <i
+                                                class="fas fa-id-badge absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="premium-input-group group">
+                                        <label
+                                            class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Studying Year</label>
+                                        <div class="relative">
+                                            <select id="studyingYear"
+                                                class="w-full appearance-none bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all" required>
+                                                <option value="" disabled selected>Select Studying Year</option>
+                                                <option value="1st Year">1st Year</option>
+                                                <option value="2nd Year">2nd Year</option>
+                                                <option value="3rd Year">3rd Year</option>
+                                                <option value="4th Year">4th Year</option>
+                                            </select>
+                                            <i
+                                                class="fas fa-calendar-days absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
+                                            <i
+                                                class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Branch Selection -->
+                                <div class="premium-input-group group">
+                                    <label
+                                        class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Branch</label>
+                                    <div class="relative">
+                                        <select id="branch"
+                                            class="w-full appearance-none bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all" required>
+                                            <option value="" disabled selected>Select Branch</option>
+                                            <option value="CSE">Computer Science & Engineering (CSE)</option>
+                                            <option value="AI&DS">Artificial Intelligence & Data Science (AI&DS)</option>
+                                            <option value="ECE">Electronics & Communication Engineering (ECE)</option>
+                                            <option value="EEE">Electrical & Electronics Engineering (EEE)</option>
+                                            <option value="ME">Mechanical Engineering (ME)</option>
+                                            <option value="CE">Civil Engineering (CE)</option>
+                                            <option value="IT">Information Technology (IT)</option>
+                                        </select>
+                                        <i
+                                            class="fas fa-graduation-cap absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
+                                        <i
+                                            class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                                    </div>
+                                </div>
+
                                 <div class="premium-input-group group">
                                     <label
                                         class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Profile
                                         Photo URL</label>
                                     <div class="relative">
                                         <input type="url" id="photoURL"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 px-5 pl-12 pr-4 font-bold text-base text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all"
                                             placeholder="https://...">
                                         <i
                                             class="fas fa-image absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -424,7 +357,7 @@
                                         Password</label>
                                     <div class="relative">
                                         <input :type="show ? 'text' : 'password'" id="currentPassword"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue dark:focus:border-iosBlue transition-all"
                                             required placeholder="••••••••">
                                         <i
                                             class="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -441,7 +374,7 @@
                                         Password</label>
                                     <div class="relative">
                                         <input :type="show ? 'text' : 'password'" id="newPassword"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
                                             required placeholder="••••••••">
                                         <i
                                             class="fas fa-key absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -458,7 +391,7 @@
                                         New Password</label>
                                     <div class="relative">
                                         <input :type="show ? 'text' : 'password'" id="confirmPassword"
-                                            class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                            class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-12 font-bold text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
                                             required placeholder="••••••••">
                                         <i
                                             class="fas fa-check-circle absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors text-lg"></i>
@@ -506,55 +439,144 @@
 
                             <!-- State: Complete ID (Hidden by default) -->
                             <div id="id-complete-state"
-                                class="hidden flex flex-col items-center justify-center p-2 sm:p-6 text-center">
-                                <div
-                                    class="relative w-full max-w-[280px] sm:max-w-sm mx-auto bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100 dark:border-white/10 p-4 sm:p-6 md:p-8 transform transition-transform hover:scale-[1.01] duration-300">
-                                    <!-- Holographic Effect overlay -->
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 pointer-events-none z-10">
-                                    </div>
-                                    <div
-                                        class="absolute top-0 left-0 w-full h-1.5 sm:h-2 bg-gradient-to-r from-iosBlue to-blue-400">
-                                    </div>
-
-                                    <div class="flex items-center justify-between mb-4 sm:mb-8 relative z-20">
-                                        <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png"
-                                            class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
-                                        <div class="text-right">
-                                            <p
-                                                class="text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-gray-400">
-                                                Gate Pass</p>
-                                            <p id="id-card-student-id"
-                                                class="text-[10px] sm:text-xs font-bold text-iosBlue">
-                                                #STUDENT-ID</p>
+                                class="hidden flex flex-col items-center justify-center p-2 sm:p-6 text-center space-y-8 animate-fade-in">
+                                
+                                <!-- 3D Flippable Card -->
+                                <div class="id-card-perspective">
+                                    <div id="id-card-inner" class="id-card-inner">
+                                        
+                                        <!-- FRONT SIDE -->
+                                        <div class="id-card-front">
+                                            <!-- Top Header -->
+                                            <div class="flex items-center justify-between w-full border-b border-gray-100 dark:border-white/10 pb-4">
+                                                <div class="flex items-center gap-2">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-8 h-8 object-contain">
+                                                    <span class="font-bold text-xs tracking-tight text-gray-900 dark:text-white">NBKRIST HOSTEL</span>
+                                                </div>
+                                                <span class="text-[8px] font-black uppercase tracking-widest px-2.5 py-1 bg-iosBlue/10 text-iosBlue rounded-full border border-iosBlue/20">RESIDENT</span>
+                                            </div>
+                                            
+                                            <!-- Profile Details -->
+                                            <div class="flex flex-col items-center my-auto py-4">
+                                                <div class="relative w-24 h-24 mb-4">
+                                                    <div class="absolute inset-0 bg-gradient-to-br from-iosBlue to-blue-400 rounded-full blur opacity-50"></div>
+                                                    <img id="id-card-avatar" class="relative w-full h-full rounded-full object-cover border-2 border-white dark:border-white/15 shadow-md" src="https://ui-avatars.com/api/?name=U&background=E2E8F0&color=4A5568&size=100">
+                                                </div>
+                                                <h3 class="font-black text-xl text-gray-900 dark:text-white tracking-tight mb-1" id="id-card-name-front">Student Name</h3>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-3" id="id-card-role-front">Hostel Resident</p>
+                                                
+                                                <div class="grid grid-cols-2 gap-x-4 gap-y-2 w-full px-4 text-left mt-2">
+                                                    <div>
+                                                        <span class="text-[8px] font-black uppercase tracking-widest text-gray-400 block">Student ID</span>
+                                                        <span id="id-card-student-id" class="text-xs font-bold text-gray-800 dark:text-gray-200">#ID</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-[8px] font-black uppercase tracking-widest text-gray-400 block">Phone</span>
+                                                        <span id="id-card-phone" class="text-xs font-bold text-gray-800 dark:text-gray-200">-</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-[8px] font-black uppercase tracking-widest text-gray-400 block">Year</span>
+                                                        <span id="id-card-year" class="text-xs font-bold text-gray-800 dark:text-gray-200">-</span>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-[8px] font-black uppercase tracking-widest text-gray-400 block">Branch</span>
+                                                        <span id="id-card-branch" class="text-xs font-bold text-gray-800 dark:text-gray-200">-</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Bottom Bar -->
+                                            <div class="w-full pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between text-gray-400">
+                                                <span class="text-[9px] font-bold"><i class="fas fa-arrows-rotate mr-1"></i> Tap to Flip</span>
+                                                <span class="text-[9px] font-bold text-iosBlue">Resident ID</span>
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <div class="bg-white p-3 sm:p-4 rounded-xl mx-auto mb-4 sm:mb-6 w-36 h-36 sm:w-48 sm:h-48 flex items-center justify-center shadow-inner border border-gray-100 relative z-20 group cursor-pointer"
-                                        onclick="window.openDetailsPage()">
-                                        <div id="qrcode-container"
-                                            class="opacity-90 group-hover:opacity-100 transition-opacity scale-[0.75] sm:scale-100">
+                                        
+                                        <!-- BACK SIDE -->
+                                        <div class="id-card-back">
+                                            <!-- Top Header -->
+                                            <div class="flex items-center justify-between w-full border-b border-gray-100 dark:border-white/10 pb-4">
+                                                <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">SECURE GATE PASS</span>
+                                                <span class="text-[8px] font-black uppercase tracking-widest px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">ACTIVE</span>
+                                            </div>
+                                            
+                                            <!-- QR Code Area -->
+                                            <div class="my-auto py-4 flex flex-col items-center">
+                                                <div class="bg-white p-3 rounded-2xl shadow-inner border border-gray-100 w-44 h-44 flex items-center justify-center relative group">
+                                                    <div id="qrcode-container" class="opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                                                </div>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-4"><i class="fas fa-scan text-iosBlue mr-1 animate-pulse"></i> Scan at main security gate</p>
+                                            </div>
+                                            
+                                            <!-- Bottom Bar -->
+                                            <div class="w-full pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between text-gray-400">
+                                                <span class="text-[9px] font-bold"><i class="fas fa-arrows-rotate mr-1"></i> Tap to Flip</span>
+                                                <button onclick="event.stopPropagation(); window.openDetailsPage()" class="text-[9px] font-bold text-iosBlue hover:underline flex items-center gap-1"><i class="fas fa-external-link-alt"></i> Open Full ID</button>
+                                            </div>
                                         </div>
-                                        <div
-                                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded-xl font-bold text-iosBlue text-xs">
-                                            <i class="fas fa-external-link-alt mr-2"></i> Open Card
-                                        </div>
-                                    </div>
-
-                                    <h3 class="font-black text-lg sm:text-xl text-gray-900 dark:text-white mb-1 relative z-20"
-                                        id="id-card-name">Student Name</h3>
-                                    <p class="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-4 sm:mb-6 relative z-20"
-                                        id="id-card-role">Hostel Resident</p>
-
-                                    <div
-                                        class="flex items-center justify-center gap-2 text-[9px] sm:text-[10px] text-gray-400 font-medium bg-gray-50 dark:bg-white/5 py-2 sm:py-3 rounded-xl border border-dashed border-gray-200 dark:border-white/10 relative z-20">
-                                        <i class="fas fa-scan text-sm sm:text-base animate-pulse"></i>
-                                        <span>Scan at Security Gate</span>
+                                        
                                     </div>
                                 </div>
-                                <p class="mt-4 sm:mt-6 text-[10px] sm:text-xs text-center text-gray-400 max-w-xs">Tap
-                                    code to view full ID
-                                    details.</p>
+                                
+                                <p class="text-xs text-gray-400 max-w-xs">Tap the card to rotate and scan your digital gate pass or print details.</p>
+
+                                <!-- Emergency Contacts Widget -->
+                                <div class="w-full max-w-md glass-panel p-6 border border-white/20 rounded-[2rem] text-left">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-10 h-10 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-lg">
+                                            <i class="fas fa-phone-flip animate-pulse"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-base text-gray-900 dark:text-white tracking-tight">Hostel Emergency Contacts</h4>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Quick dial local support lines</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <!-- Warden -->
+                                        <div class="flex items-center justify-between p-3.5 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 hover:scale-[1.01] transition-transform">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-iosBlue/10 text-iosBlue flex items-center justify-center">
+                                                    <i class="fas fa-user-tie"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900 dark:text-white leading-tight">Chief Warden Office</p>
+                                                    <p class="text-[10px] text-gray-400 font-semibold">General Administration & Permissions</p>
+                                                </div>
+                                            </div>
+                                            <a href="tel:+919876543210" class="w-9 h-9 rounded-xl bg-iosBlue text-white flex items-center justify-center shadow-md shadow-blue-500/20 active:scale-90 transition-transform"><i class="fas fa-phone text-xs"></i></a>
+                                        </div>
+                                        
+                                        <!-- Security -->
+                                        <div class="flex items-center justify-between p-3.5 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 hover:scale-[1.01] transition-transform">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                                                    <i class="fas fa-shield-halved"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900 dark:text-white leading-tight">Campus Security Gate</p>
+                                                    <p class="text-[10px] text-gray-400 font-semibold">24/7 Gate Patrol & Emergency Assistance</p>
+                                                </div>
+                                            </div>
+                                            <a href="tel:+919876543211" class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 active:scale-90 transition-transform"><i class="fas fa-phone text-xs"></i></a>
+                                        </div>
+                                        
+                                        <!-- Medical -->
+                                        <div class="flex items-center justify-between p-3.5 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 hover:scale-[1.01] transition-transform">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center">
+                                                    <i class="fas fa-house-medical"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs font-bold text-gray-900 dark:text-white leading-tight">Health Center / Doctor</p>
+                                                    <p class="text-[10px] text-gray-400 font-semibold">On-call Doctor & Medical Emergencies</p>
+                                                </div>
+                                            </div>
+                                            <a href="tel:+919876543212" class="w-9 h-9 rounded-xl bg-red-500 text-white flex items-center justify-center shadow-md shadow-red-500/20 active:scale-90 transition-transform"><i class="fas fa-phone text-xs"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                             </div>
 
                         </div>

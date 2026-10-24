@@ -7,3 +7,12 @@
 /rules           /rules.html 200
 /profile         /profile.html 200
 /mess-menu       /mess-menu.html 200
+/admin           /admin.html 200
+/gate-kiosk      /gate-kiosk.html 200
+/id-checker      /id-checker.html 200
+/id-card         /id-card.html 200
+/about           /about.html 200
+/contact         /contact.html 200
+/developer       /developer.html 200
+/privacy         /privacy.html 200
+/terms           /terms.html 200

@@ -45,7 +45,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const SUPER_ADMIN = 'kamilikhith@gmail.com';
         const role = userDoc.exists() ? userDoc.data().role : null;
 
-        if (role !== CONSTANTS.ROLES.ADMIN && user.email !== SUPER_ADMIN) {
+        const emailLower = user.email ? user.email.toLowerCase().trim() : '';
+        const emailPrefix = emailLower.split('@')[0];
+        const isRoll = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i.test(emailPrefix);
+        const isAdminEmail = !isRoll && (
+            emailLower === SUPER_ADMIN || 
+            emailLower === 'admin@nbkrist.org' || 
+            emailLower === 'warden@nbkrist.org' ||
+            (emailLower.endsWith('@nbkrist.org') && (emailPrefix === 'admin' || emailPrefix === 'warden' || emailPrefix.startsWith('admin') || emailPrefix.startsWith('warden')))
+        );
+
+        if (role !== CONSTANTS.ROLES.ADMIN && !isAdminEmail) {
             console.error('AdminJS: Unauthorized execution attempt.');
             window.location.replace('index.html');
             return;
@@ -68,6 +78,188 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Trigger entry animation
             adminInterface.classList.remove('opacity-0', 'scale-95');
         }, 600);
+    }
+
+    // --- GATE PASS CODE MANAGEMENT (kamilikhith@gmail.com only) ---
+    const GATEPASS_OWNER = 'kamilikhith@gmail.com';
+    const gatepassNavBtn = document.getElementById('gatepass-nav-btn');
+
+    // Quick-show based on localStorage to prevent UI delay
+    try {
+        const cachedUser = JSON.parse(localStorage.getItem('user'));
+        if (cachedUser && cachedUser.email === GATEPASS_OWNER && gatepassNavBtn) {
+            gatepassNavBtn.style.display = '';
+        }
+    } catch (e) {
+        // Ignore cache errors
+    }
+
+    if (user.email === GATEPASS_OWNER && gatepassNavBtn) {
+        gatepassNavBtn.style.display = '';
+
+        // Cache DOM elements
+        const gatepassNewInput = document.getElementById('gatepass-new-input');
+        const gatepassSaveBtn = document.getElementById('gatepass-save-btn');
+        const gatepassHistoryList = document.getElementById('gatepass-history-list');
+        const gatepassHistoryCount = document.getElementById('gatepass-history-count');
+
+        // Format timestamp helper
+        const formatTimestamp = (ts) => {
+            if (!ts) return 'Unknown';
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            return d.toLocaleString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            });
+        };
+
+        // Load password history
+        async function loadPasswordHistory() {
+            try {
+                const historyRef = collection(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk', 'passwordHistory');
+                const q = query(historyRef, orderBy('changedAt', 'desc'));
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    gatepassHistoryList.innerHTML = `
+                        <div class="text-center py-12 text-gray-400">
+                            <i class="fas fa-inbox text-4xl mb-3 opacity-30"></i>
+                            <p class="text-sm font-medium">No valid passwords set</p>
+                        </div>`;
+                    gatepassHistoryCount.textContent = '0 entries';
+                    return;
+                }
+
+                gatepassHistoryCount.textContent = `${snapshot.size} entries`;
+                gatepassHistoryList.innerHTML = snapshot.docs.map((docSnap, idx) => {
+                    const d = docSnap.data();
+                    const docId = docSnap.id;
+                    const isLatest = idx === 0;
+                    return `
+                        <div class="flex items-center gap-4 p-4 rounded-2xl ${isLatest
+                            ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/50 dark:border-indigo-500/20'
+                            : 'bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5'
+                        } transition-colors group">
+                            <div class="w-10 h-10 rounded-xl ${isLatest
+                            ? 'bg-indigo-500 text-white'
+                            : 'bg-gray-200 dark:bg-white/10 text-gray-500'
+                        } flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-${isLatest ? 'check' : 'key'} text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-black text-lg tracking-widest font-mono text-gray-800 dark:text-white">${d.password}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">
+                                    ${formatTimestamp(d.changedAt)} · ${d.changedBy || 'Unknown'}
+                                </p>
+                            </div>
+                            ${isLatest ? '<span class="text-[9px] font-bold text-indigo-500 bg-indigo-100 dark:bg-indigo-500/20 px-2 py-1 rounded-full uppercase tracking-widest flex-shrink-0">Active</span>' : ''}
+                            <button onclick="deleteGatePassword('${docId}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all focus:opacity-100" title="Delete Password">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>`;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load password history:', e);
+                gatepassHistoryList.innerHTML = `
+                    <div class="text-center py-8 text-red-400">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p class="text-sm font-medium">Failed to load valid passwords</p>
+                    </div>`;
+            }
+        }
+
+        // Helper: Sync subcollection and enforce FIFO 5 limit
+        async function syncGatePassFIFO() {
+            const historyRef = collection(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk', 'passwordHistory');
+            const q = query(historyRef, orderBy('changedAt', 'desc'));
+            const snapshot = await getDocs(q);
+
+            const validPasswords = [];
+
+            // Use sequential deletion/accumulation
+            for (let i = 0; i < snapshot.docs.length; i++) {
+                const docSnap = snapshot.docs[i];
+                if (i < 5) {
+                    validPasswords.push(docSnap.data().password);
+                } else {
+                    // Delete older documents (FIFO)
+                    await deleteDoc(docSnap.ref);
+                }
+            }
+
+            // Save valid array to main doc & update legacy password field for fallback if needed
+            await setDoc(doc(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk'), {
+                validPasswords: validPasswords,
+                password: validPasswords.length > 0 ? validPasswords[0] : null,
+                updatedAt: serverTimestamp(),
+                updatedBy: user.email
+            }, { merge: true });
+        }
+
+        // Save new password
+        gatepassSaveBtn?.addEventListener('click', async () => {
+            const newPassword = gatepassNewInput.value.trim();
+            if (!newPassword) {
+                showToast('Please enter an access code', true);
+                return;
+            }
+
+            gatepassSaveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
+            gatepassSaveBtn.disabled = true;
+
+            try {
+                // Add to password history subcollection
+                await addDoc(collection(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk', 'passwordHistory'), {
+                    password: newPassword,
+                    changedAt: serverTimestamp(),
+                    changedBy: user.email
+                });
+
+                // Enforce FIFO limit of 5 and sync to main document
+                await syncGatePassFIFO();
+
+                showToast('Gate access code added successfully');
+                gatepassNewInput.value = '';
+
+                // Refresh UI
+                await loadPasswordHistory();
+            } catch (e) {
+                console.error('Failed to add gate password:', e);
+                showToast('Failed to add access code', true);
+            } finally {
+                gatepassSaveBtn.innerHTML = '<i class="fas fa-save"></i> Save Code';
+                gatepassSaveBtn.disabled = false;
+            }
+        });
+
+        // Delete password
+        window.deleteGatePassword = async (docId) => {
+            const isConfirmed = await showConfirm(
+                'Delete Password?',
+                'This access code will no longer work for the gate kiosk.',
+                'Delete'
+            );
+
+            if (isConfirmed.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk', 'passwordHistory', docId));
+                    showToast('Password deleted successfully');
+                    await syncGatePassFIFO();
+                    await loadPasswordHistory();
+                } catch (err) {
+                    console.error("Failed to delete password:", err);
+                    showToast('Failed to delete password', true);
+                }
+            }
+        };
+
+        // Load data when gate pass tab is opened
+        window.loadGatePassData = async () => {
+            await loadPasswordHistory();
+        };
+
+        // Auto-load on init if tab is visible, or lazy-load on tab switch
+        loadPasswordHistory();
     }
 
     // --- REUSABLE CONFIRMATION DIALOG ---
@@ -149,6 +341,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initAnalytics = () => {
         // === OVERVIEW TAB CHARTS ===
 
+        // Helper to create gradients
+        const getGradient = (ctx, colorStart, colorEnd) => {
+            const grad = ctx.createLinearGradient(0, 0, 0, 300);
+            grad.addColorStop(0, colorStart);
+            grad.addColorStop(1, colorEnd);
+            return grad;
+        };
+
         // 1a. Room Occupancy Doughnut (Overview)
         const ctxOccupancyOverview = document.getElementById('occupancyChartOverview')?.getContext('2d');
         if (ctxOccupancyOverview) {
@@ -158,16 +358,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     labels: ['Booked', 'Available'],
                     datasets: [{
                         data: [0, 100],
-                        backgroundColor: ['#6366f1', '#e2e8f0'],
+                        backgroundColor: ['rgba(94, 92, 230, 0.85)', 'rgba(148, 163, 184, 0.18)'],
                         borderWidth: 0,
-                        hoverOffset: 4
+                        hoverOffset: 6
                     }]
                 },
                 options: {
                     responsive: true,
-                    cutout: '75%',
+                    maintainAspectRatio: false,
+                    cutout: '80%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11 } } }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15, font: { size: 11, weight: 'bold' } } }
                     }
                 }
             });
@@ -176,6 +377,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 1b. Complaints Volume Bar (Overview)
         const ctxComplaintsOverview = document.getElementById('complaintsChartOverview')?.getContext('2d');
         if (ctxComplaintsOverview) {
+            const barGrad = getGradient(ctxComplaintsOverview, 'rgba(94, 92, 230, 0.85)', 'rgba(94, 92, 230, 0.15)');
+            
             complaintsChartOverviewInstance = new Chart(ctxComplaintsOverview, {
                 type: 'bar',
                 data: {
@@ -183,17 +386,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     datasets: [{
                         label: 'Complaints',
                         data: [0, 0, 0, 0, 0, 0],
-                        backgroundColor: '#6366f1',
-                        borderRadius: 6,
-                        barThickness: 20
+                        backgroundColor: barGrad,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: 16
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e2e8f0' } },
-                        x: { grid: { display: false } }
+                        y: { beginAtZero: true, grid: { borderDash: [4, 4], color: 'rgba(148, 163, 184, 0.12)' }, ticks: { font: { size: 10, weight: 'bold' } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                     },
                     plugins: { legend: { display: false } }
                 }
@@ -211,16 +415,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     labels: ['Booked', 'Available', 'Maintenance'],
                     datasets: [{
                         data: [0, 100, 0],
-                        backgroundColor: ['#6366f1', '#e2e8f0', '#ef4444'],
+                        backgroundColor: ['rgba(94, 92, 230, 0.85)', 'rgba(148, 163, 184, 0.18)', 'rgba(255, 69, 58, 0.8)'],
                         borderWidth: 0,
-                        hoverOffset: 4
+                        hoverOffset: 6
                     }]
                 },
                 options: {
                     responsive: true,
-                    cutout: '75%',
+                    maintainAspectRatio: false,
+                    cutout: '80%',
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11, weight: 'bold' } } }
                     }
                 }
             });
@@ -229,6 +434,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 2b. Complaints Volume Bar (Analytics)
         const ctxComplaints = document.getElementById('complaintsChart')?.getContext('2d');
         if (ctxComplaints) {
+            const barGrad2 = getGradient(ctxComplaints, 'rgba(94, 92, 230, 0.85)', 'rgba(94, 92, 230, 0.15)');
+
             complaintsChartInstance = new Chart(ctxComplaints, {
                 type: 'bar',
                 data: {
@@ -236,17 +443,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     datasets: [{
                         label: 'Complaints',
                         data: [0, 0, 0, 0, 0, 0],
-                        backgroundColor: '#6366f1',
-                        borderRadius: 6,
-                        barThickness: 20
+                        backgroundColor: barGrad2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: 16
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#e2e8f0' } },
-                        x: { grid: { display: false } }
+                        y: { beginAtZero: true, grid: { borderDash: [4, 4], color: 'rgba(148, 163, 184, 0.12)' }, ticks: { font: { size: 10, weight: 'bold' } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                     },
                     plugins: { legend: { display: false } }
                 }
@@ -256,20 +464,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 3. Weekly Activity Line (Overview tab)
         const ctxWeekly = document.getElementById('adminChart')?.getContext('2d');
         if (ctxWeekly) {
+            const gradOutpass = getGradient(ctxWeekly, 'rgba(255, 69, 58, 0.15)', 'rgba(255, 69, 58, 0.0)');
+            const gradComplaint = getGradient(ctxWeekly, 'rgba(94, 92, 230, 0.15)', 'rgba(94, 92, 230, 0.0)');
+
             weeklyChartInstance = new Chart(ctxWeekly, {
                 type: 'line',
                 data: {
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     datasets: [
-                        { label: 'Outpasses', data: [0, 0, 0, 0, 0, 0, 0], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.4 },
-                        { label: 'Complaints', data: [0, 0, 0, 0, 0, 0, 0], borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }
+                        { 
+                            label: 'Outpasses', 
+                            data: [0, 0, 0, 0, 0, 0, 0], 
+                            borderColor: '#ff453a', 
+                            borderWidth: 3,
+                            backgroundColor: gradOutpass, 
+                            fill: true, 
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        },
+                        { 
+                            label: 'Complaints', 
+                            data: [0, 0, 0, 0, 0, 0, 0], 
+                            borderColor: '#5e5ce6', 
+                            borderWidth: 3,
+                            backgroundColor: gradComplaint, 
+                            fill: true, 
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top', align: 'end' } },
-                    scales: { y: { display: false }, x: { grid: { display: false } } }
+                    plugins: { legend: { position: 'top', align: 'end', labels: { font: { size: 11, weight: 'bold' } } } },
+                    scales: { 
+                        y: { grid: { borderDash: [4, 4], color: 'rgba(148, 163, 184, 0.1)' }, ticks: { font: { size: 10, weight: 'bold' } } }, 
+                        x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } } 
+                    }
                 }
             });
         }
@@ -469,7 +703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const matchesRole = roleFilter === 'all' || role === roleFilter;
 
             // Profile completion filter
-            const isComplete = u.studentId && u.displayName && u.phone;
+            const isComplete = u.studentId && u.displayName && u.phone && u.branch && u.studyingYear;
             const matchesProfile = profileFilter === 'all' ||
                 (profileFilter === 'complete' && isComplete) ||
                 (profileFilter === 'incomplete' && !isComplete);
@@ -499,7 +733,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const role = u.role || CONSTANTS.ROLES.STUDENT;
             const avatar = u.photoURL || `https://ui-avatars.com/api/?name=${u.displayName || 'User'}&background=random&color=fff`;
             const isSelf = u.uid === auth.currentUser?.uid;
-            const isComplete = u.studentId && u.displayName && u.phone;
+            const isComplete = u.studentId && u.displayName && u.phone && u.branch && u.studyingYear;
             const isSelected = selectedUsers.has(u.id);
 
             // Profile completion badge
@@ -870,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // CSV Export Functions
     const exportToCSV = (users, filename) => {
-        const headers = ['Name', 'Email', 'Student ID', 'Phone', 'Gender', 'Role', 'Profile Status'];
+        const headers = ['Name', 'Email', 'Student ID', 'Phone', 'Gender', 'Role', 'Branch', 'Year', 'Profile Status'];
         const rows = users.map(u => [
             u.displayName || '',
             u.email || '',
@@ -878,7 +1112,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             u.phone || '',
             u.gender || '',
             u.role || 'student',
-            (u.studentId && u.displayName && u.phone) ? 'Complete' : 'Incomplete'
+            u.branch || '',
+            u.studyingYear || '',
+            (u.studentId && u.displayName && u.phone && u.branch && u.studyingYear) ? 'Complete' : 'Incomplete'
         ]);
 
         const csvContent = [
@@ -1555,11 +1791,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         noticesList.innerHTML = snap.docs.map(doc => {
             const n = doc.data();
             const time = n.timestamp?.toDate().toLocaleString() || 'Just now';
+            const cat = n.category || 'General';
+            
+            // Badge design depending on category
+            let badgeHtml = '';
+            if (cat === 'Urgent') {
+                badgeHtml = `<span class="px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 rounded-md mr-2">Urgent 🚨</span>`;
+            } else if (cat === 'Mess') {
+                badgeHtml = `<span class="px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-md mr-2">Mess 🍳</span>`;
+            } else if (cat === 'Rules') {
+                badgeHtml = `<span class="px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded-md mr-2">Rules 📜</span>`;
+            } else {
+                badgeHtml = `<span class="px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-md mr-2">General 📢</span>`;
+            }
+
             return `
-                <div class="p-3 bg-yellow-50 dark:bg-yellow-500/10 rounded-xl border border-yellow-200 dark:border-yellow-500/20 relative group">
-                    <p class="text-xs font-medium text-gray-800 dark:text-gray-200">${escapeHTML(n.message)}</p>
-                    <p class="text-[9px] text-gray-400 mt-1">${time}</p>
-                    <button onclick="window.deleteNotice('${doc.id}')" class="absolute top-2 right-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-times"></i></button>
+                <div class="p-4 bg-white/60 dark:bg-yellow-500/5 rounded-2xl border border-gray-150 dark:border-yellow-500/10 relative group hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center">${badgeHtml}</div>
+                        <p class="text-[9px] font-mono text-gray-400">${time}</p>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-800 dark:text-gray-250 leading-relaxed">${escapeHTML(n.message)}</p>
+                    <button onclick="window.deleteNotice('${doc.id}')" class="absolute top-3 right-3 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-times text-xs"></i></button>
                 </div>
             `;
         }).join('');
@@ -1569,11 +1822,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('notice-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const text = document.getElementById('notice-text')?.value;
+        const category = document.getElementById('notice-tag-select')?.value || 'General';
         if (!text?.trim()) return showToast('Please enter text', true);
 
         window.safeAsync(async () => {
             await addDoc(collection(db, CONSTANTS.COLLECTIONS.NOTICES), {
                 message: text.trim(),
+                category: category,
                 timestamp: serverTimestamp(),
                 postedBy: auth.currentUser.email
             });

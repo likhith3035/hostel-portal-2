@@ -110,6 +110,7 @@
     x-data="{ currentTab: 'stats', sidebarOpen: false }" x-init="$watch('currentTab', value => {
         if(value === 'users' && window.loadUsers) window.loadUsers();
         if(value === 'bookings' && window.loadBookings) window.loadBookings();
+        if(value === 'gatepass' && window.loadGatePassData) window.loadGatePassData();
     })">>
 
     <div class="mesh-bg">
@@ -125,11 +126,11 @@
                 <div class="absolute inset-0 bg-indigo-500/20 dark:bg-indigo-400/20 rounded-full blur-xl animate-pulse">
                 </div>
 
-                <!-- Breathing Shield Icon -->
+                <!-- Breathing Logo -->
                 <div class="relative z-10 animate-float">
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                        <i class="fas fa-shield-halved text-white text-xl"></i>
+                        <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-7 h-7 object-contain brightness-0 invert" alt="Logo">
                     </div>
                 </div>
             </div>
@@ -149,10 +150,7 @@
             class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col glass-panel border-r border-gray-200 dark:border-white/5 transition-transform duration-300 md:static md:translate-x-0 md:m-4 md:rounded-xl md:h-[calc(100vh-2rem)]">
             <div class="p-6 flex items-center justify-between lg:justify-start gap-4">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-lg shadow-indigo-600/20">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
+                    <img src="https://upload.wikimedia.org/wikipedia/en/3/3d/NBKRIST_logo.png" class="w-9 h-9 object-contain" alt="Logo">
                     <div>
                         <h1 class="font-bold text-lg tracking-tight">Hostel<span class="text-indigo-600">Admin</span>
                         </h1>
@@ -196,6 +194,12 @@
                     :class="currentTab === 'content' ? 'active' : 'hover:bg-black/5 dark:hover:bg-white/5'"
                     class="nav-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-sm group text-gray-500 dark:text-gray-400"><i
                         class="fas fa-broadcast-tower w-5 text-center"></i> <span>Broadcast</span></button>
+
+                <!-- Gate Pass tab (shown only for kamilikhith@gmail.com via JS) -->
+                <button id="gatepass-nav-btn" @click="currentTab = 'gatepass'; sidebarOpen = false"
+                    :class="currentTab === 'gatepass' ? 'active' : 'hover:bg-black/5 dark:hover:bg-white/5'"
+                    class="nav-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-sm group text-gray-500 dark:text-gray-400"
+                    style="display:none;"><i class="fas fa-key w-5 text-center"></i> <span>Gate Pass</span></button>
 
                 <div class="my-4 border-t border-gray-200 dark:border-white/5"></div>
 
@@ -890,11 +894,78 @@
                         <form id="notice-form" class="mb-4"><input type="hidden" id="notice-id"><textarea
                                 id="notice-text" rows="4"
                                 class="w-full p-4 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 focus:ring-2 focus:ring-yellow-400 outline-none text-sm mb-3"
-                                placeholder="New sticky notice..."></textarea><button id="notice-submit-btn"
+                                placeholder="New sticky notice..."></textarea>
+                            <div class="mb-3">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Category Tag</label>
+                                <select id="notice-tag-select" class="w-full p-3.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-yellow-400 font-bold">
+                                    <option value="General">General 📢</option>
+                                    <option value="Urgent">Urgent 🚨</option>
+                                    <option value="Mess">Mess 🍳</option>
+                                    <option value="Rules">Rules 📜</option>
+                                </select>
+                            </div>
+                            <button id="notice-submit-btn"
                                 type="submit"
                                 class="w-full py-3 bg-yellow-400 text-yellow-900 font-bold rounded-xl text-sm hover:bg-yellow-500 transition-colors shadow-sm">Post
                                 Notice</button></form>
                         <div id="notices-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <!-- Gate Pass Management (kamilikhith@gmail.com only) -->
+                <div id="gatepass-section" x-show="currentTab === 'gatepass'" class="animate-fade-in space-y-8"
+                    style="display:none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Gate Pass Code
+                            </h2>
+                            <p class="text-slate-500 dark:text-gray-400 text-sm mt-1">Manage the access code for the
+                                gate kiosk</p>
+                        </div>
+                        <a href="gate-kiosk.html" target="_blank"
+                            class="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg">
+                            <i class="fas fa-external-link-alt text-xs"></i> Open Gate Kiosk
+                        </a>
+                    </div>
+
+                    <!-- Set New Password -->
+                    <div class="glass-panel p-6 rounded-[2rem]">
+                        <h4 class="font-bold text-lg mb-4"><i class="fas fa-edit mr-2 text-indigo-500"></i>Set New Code
+                        </h4>
+                        <div class="flex gap-3">
+                            <input type="text" id="gatepass-new-input" placeholder="Enter new access code..."
+                                class="flex-1 px-5 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl text-lg font-bold text-gray-800 dark:text-white tracking-widest font-mono focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                maxlength="20">
+                            <button id="gatepass-save-btn"
+                                class="px-6 py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-colors shadow-lg flex items-center gap-2 whitespace-nowrap">
+                                <i class="fas fa-save"></i> Save Code
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Password History -->
+                    <div class="glass-panel p-6 rounded-[2rem]">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h4 class="font-bold text-lg"><i class="fas fa-history mr-2 text-gray-400"></i>Valid
+                                    Passwords (Max 5)</h4>
+                                <p class="text-xs text-amber-500/90 dark:text-amber-400/90 font-medium mt-1">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Only the latest 5 passwords are
+                                    valid. Older passwords are automatically removed for security purposes.
+                                </p>
+                            </div>
+                            <span
+                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                                id="gatepass-history-count">-- entries</span>
+                        </div>
+                        <div id="gatepass-history-list" class="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            <div class="text-center py-12 text-gray-400">
+                                <div
+                                    class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4">
+                                </div>
+                                <p class="text-sm font-medium">Loading valid passwords...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

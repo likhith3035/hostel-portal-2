@@ -155,7 +155,8 @@
                             <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Complaints</h2>
                             <div class="flex items-center gap-2">
                                 <p class="text-sm text-gray-500 dark:text-gray-400 font-medium" id="current-date">
-                                    Loading...</p>
+                                    <span class="skeleton skeleton-text w-20 inline-block">&nbsp;</span>
+                                </p>
                                 <span class="text-gray-300 dark:text-gray-700">|</span>
                                 <p class="text-sm font-bold text-iosBlue tabular-nums" id="clock-time">00:00</p>
                                 <p class="text-[10px] font-bold text-iosBlue uppercase" id="am-pm"></p>
@@ -196,7 +197,9 @@
 
                             <ul id="notifications-list"
                                 class="max-h-[60vh] overflow-y-auto custom-scrollbar p-3 space-y-2">
-                                <li class="p-8 text-center text-gray-400 text-sm font-medium">Loading notifications...
+                                <li class="p-5 space-y-3">
+                                    <div class="skeleton skeleton-text w-full"></div>
+                                    <div class="skeleton skeleton-text w-3/4"></div>
                                 </li>
                             </ul>
                         </div>
@@ -205,7 +208,8 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open"
                             class="w-10 h-10 lg:w-12 lg:h-12 rounded-full glass-panel flex items-center justify-center relative spring-click p-0.5 hover:scale-105 transition-all active:scale-95">
-                            <img id="user-avatar" src="https://placehold.co/100"
+                            <img id="user-avatar"
+                                src="https://ui-avatars.com/api/?name=U&background=E2E8F0&color=4A5568&size=100"
                                 class="w-full h-full rounded-full object-cover shadow-sm">
                         </button>
                         <div x-show="open" @click.away="open = false" x-transition
@@ -269,7 +273,7 @@
                                     class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Category</label>
                                 <div class="relative">
                                     <select id="category"
-                                        class="w-full appearance-none bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                        class="w-full appearance-none bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue transition-all"
                                         required>
                                         <option value="" disabled selected hidden>Select Category</option>
                                         <option>Electrical</option>
@@ -292,7 +296,7 @@
                                     Level</label>
                                 <div class="relative">
                                     <select id="urgency"
-                                        class="w-full appearance-none bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                        class="w-full appearance-none bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue transition-all"
                                         required>
                                         <option value="low">Low Priority</option>
                                         <option value="medium">Medium Priority</option>
@@ -311,7 +315,7 @@
                                 class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Subject</label>
                             <div class="relative">
                                 <input type="text" id="title"
-                                    class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all"
+                                    class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue transition-all"
                                     placeholder="Brief summary of the issue..." required>
                                 <i
                                     class="fas fa-heading absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>
@@ -323,7 +327,7 @@
                                 class="premium-label block text-xs font-black uppercase text-gray-400 tracking-widest mb-2 ml-1">Details</label>
                             <div class="relative">
                                 <textarea id="description" rows="4"
-                                    class="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-4 focus:ring-iosBlue/10 focus:border-iosBlue transition-all resize-none"
+                                    class="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl py-4 pl-12 pr-4 font-bold text-gray-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-iosBlue/20 focus:border-iosBlue transition-all resize-none"
                                     placeholder="Please describe the problem in detail..." required></textarea>
                                 <i
                                     class="fas fa-align-left absolute left-5 top-6 text-gray-400 group-focus-within:text-iosBlue transition-colors text-lg"></i>

@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('user-gender').textContent = data.gender || 'Not Specified';
         document.getElementById('user-role').textContent = data.role || 'Student';
         document.getElementById('user-student-id').textContent = data.studentId || 'No ID';
+        const userYear = document.getElementById('user-year');
+        const userBranch = document.getElementById('user-branch');
+        if (userYear) userYear.textContent = data.studyingYear || 'Not Specified';
+        if (userBranch) userBranch.textContent = data.branch || 'Not Specified';
 
         if (data.photoURL) {
             document.getElementById('user-photo').src = data.photoURL;

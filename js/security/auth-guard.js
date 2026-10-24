@@ -40,6 +40,16 @@ const PUBLIC_PAGES = [
     '404.html'
 ];
 
+const isAdminEmail = (email) => {
+    if (!email) return false;
+    const lower = email.toLowerCase().trim();
+    if (lower === 'kamilikhith@gmail.com' || lower === 'admin@nbkrist.org' || lower === 'warden@nbkrist.org') return true;
+    const prefix = lower.split('@')[0];
+    const rollPattern = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i;
+    if (rollPattern.test(prefix)) return false;
+    return lower.endsWith('@nbkrist.org') && (prefix === 'admin' || prefix === 'warden' || prefix.startsWith('admin') || prefix.startsWith('warden'));
+};
+
 async function initAuthGuard() {
     let currentPage = window.location.pathname.split('/').pop().split('?')[0] || 'index.html';
     // Handle clean URLs (e.g. /booking -> booking.html)
@@ -86,11 +96,11 @@ async function initAuthGuard() {
             console.log('[AuthGuard] Optimistic render from cache');
             window.currentUser = user;
             window.currentUserData = cachedData.data;
-            const role = cachedData.data.role || 'student';
+            const role = (cachedData.data.role === 'admin' || isAdminEmail(user.email)) ? 'admin' : (cachedData.data.role || 'student');
             updateGlobalUI(user, role, cachedData.data);
 
             // If admin page, verify role immediately from cache while waiting for snapshot
-            if (isAdminPage && role !== 'admin' && user.email !== 'kamilikhith@gmail.com') {
+            if (isAdminPage && role !== 'admin') {
                 window.location.replace('index.html?msg=access_denied');
                 return;
             }
@@ -113,14 +123,13 @@ async function initAuthGuard() {
                 // Update Global State
                 window.currentUser = user;
                 window.currentUserData = userData;
-                const role = userData.role || 'student';
+                const role = (userData.role === 'admin' || isAdminEmail(user.email)) ? 'admin' : (userData.role || 'student');
 
                 console.log('[AuthGuard] Real-time data received. Role:', role);
 
                 // Admin Security Check (Real-time)
                 if (isAdminPage) {
-                    const SUPER_ADMIN = 'kamilikhith@gmail.com';
-                    if (role !== 'admin' && user.email !== SUPER_ADMIN) {
+                    if (role !== 'admin') {
                         console.error('[AuthGuard] Security Alert: Unauthorized Admin Access Attempt');
                         window.location.replace('index.html?msg=access_denied&reason=unauthorized');
                         return;

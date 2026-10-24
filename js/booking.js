@@ -34,6 +34,7 @@ const DEMO_ROOMS = [
 
 let allRooms = [];
 let activeGenderFilter = 'all';
+let activeTypeFilter = 'all';
 let currentUser = null;
 
 window.dismissRejection = async () => {
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bookingStatusContainer = document.getElementById('booking-status-container');
     const bookingInterface = document.getElementById('booking-interface');
     const genderFilters = document.getElementById('gender-filters');
+    const typeFilters = document.getElementById('type-filters');
     const roomSearchInput = document.getElementById('room-search');
 
     if (roomListingsContainer) roomListingsContainer.innerHTML = `<div class="skeleton h-64 w-full"></div>`.repeat(3);
@@ -64,6 +66,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- LOGIC ---
+
+    const renderHeatmap = () => {
+        const container = document.getElementById('campus-map-container');
+        if (!container) return;
+
+        const blocks = {};
+        allRooms.forEach(room => {
+            const block = room.data.block || (room.data.roomNumber.startsWith('1') ? 'A' : room.data.roomNumber.startsWith('2') ? 'B' : 'C');
+            if (!blocks[block]) {
+                blocks[block] = { name: `Block ${block}`, totalBeds: 0, occupiedBeds: 0, gender: room.data.gender };
+            }
+            const beds = room.data.beds || {};
+            const total = Object.keys(beds).length;
+            const occupied = Object.values(beds).filter(b => b.status !== 'available').length;
+            blocks[block].totalBeds += total;
+            blocks[block].occupiedBeds += occupied;
+        });
+
+        if (Object.keys(blocks).length === 0) {
+            container.innerHTML = `<div class="col-span-full p-6 text-center text-xs font-bold text-gray-400">Loading block heatmap...</div>`;
+            return;
+        }
+
+        container.innerHTML = Object.entries(blocks).map(([key, block]) => {
+            const percent = block.totalBeds > 0 ? Math.round((block.occupiedBeds / block.totalBeds) * 100) : 0;
+            const isFull = percent === 100;
+            const isFilling = percent > 70;
+            const colorClass = isFull ? 'text-red-500 bg-red-500/10 border-red-500/20' : isFilling ? 'text-orange-500 bg-orange-500/10 border-orange-500/20' : 'text-green-500 bg-green-500/10 border-green-500/20';
+            const progressColor = isFull ? 'bg-red-500' : isFilling ? 'bg-orange-500' : 'bg-green-500';
+
+            return `
+                <div class="glass-panel p-5 rounded-[2rem] border border-transparent hover:border-gray-200 dark:hover:border-white/10 transition-all flex flex-col justify-between group hover:scale-[1.02] bg-white/40 dark:bg-black/20">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">${block.gender}</span>
+                        <span class="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${colorClass}">${percent}% Occupied</span>
+                    </div>
+                    <h4 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${block.name}</h4>
+                    <div class="mt-4">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5">
+                            <span>Beds Assigned</span>
+                            <span>${block.occupiedBeds}/${block.totalBeds}</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full ${progressColor} transition-all duration-1000" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
 
     const renderRoomList = (rooms) => {
         if (!roomListingsContainer) return;
@@ -83,7 +135,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const availableBeds = Object.values(data.beds).filter(b => b.status === 'available').length;
             const totalBeds = Object.keys(data.beds).length;
             const isFull = availableBeds === 0;
-            const delay = index * 80;
+            const delay = index * 60;
+            const roomTypeVal = data.type || (parseInt(data.roomNumber) % 2 === 0 ? 'AC' : 'Non-AC');
 
             // Bed buttons - clean pill design
             const bedVisuals = Object.entries(data.beds).map(([id, bed]) => {
@@ -106,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }).join('');
 
             return `
-                <div class="bg-white dark:bg-white/5 rounded-3xl p-6 border border-gray-100 dark:border-white/10 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300 flex flex-col" style="animation: fadeIn 0.5s ease-out ${delay}ms backwards;">
+                <div class="bg-white dark:bg-white/5 rounded-3xl p-6 border border-gray-100 dark:border-white/10 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300 flex flex-col premium-card-hover" style="animation: fadeIn 0.5s ease-out ${delay}ms backwards;">
                     
                     <!-- Header -->
                     <div class="flex justify-between items-start mb-5">
@@ -115,10 +168,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     ${data.gender}
                                 </span>
+                                <span class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-[10px] font-black text-iosBlue uppercase tracking-wider">
+                                    ${roomTypeVal}
+                                </span>
                                 <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider
                                     ${isFull
-                    ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
-                    : 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400'}">
+                                        ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
+                                        : 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400'}">
                                     ${isFull ? 'Full' : availableBeds + ' Available'}
                                 </span>
                             </div>
@@ -162,8 +218,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const query = roomSearchInput?.value.toLowerCase() || '';
         const filteredRooms = allRooms.filter(room => {
             const matchesGender = activeGenderFilter === 'all' || room.data.gender.toLowerCase() === activeGenderFilter;
+            
+            const roomType = room.data.type ? room.data.type.toLowerCase() : (parseInt(room.data.roomNumber) % 2 === 0 ? 'ac' : 'non-ac');
+            const matchesType = activeTypeFilter === 'all' || roomType === activeTypeFilter;
+
             const matchesSearch = room.data.roomNumber.toLowerCase().includes(query);
-            return matchesGender && matchesSearch;
+            
+            return matchesGender && matchesType && matchesSearch;
         });
         renderRoomList(filteredRooms);
     };
@@ -184,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         roomUnsubscribe = onSnapshot(q, (snapshot) => {
             allRooms = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
             filterAndRenderRooms();
+            renderHeatmap();
         }, (error) => {
             console.error("Fetch rooms failed:", error);
             if (roomListingsContainer) roomListingsContainer.innerHTML = `<div class="col-span-full text-center py-12"><i class="fas fa-exclamation-triangle text-4xl text-red-400"></i><p class="text-red-500 mt-2">Failed to load rooms.</p></div>`;
@@ -342,6 +404,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             genderFilters.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             activeGenderFilter = btn.dataset.gender;
+            filterAndRenderRooms();
+        }
+    });
+
+    typeFilters?.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (btn) {
+            typeFilters.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTypeFilter = btn.dataset.type;
             filterAndRenderRooms();
         }
     });

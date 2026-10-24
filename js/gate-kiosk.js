@@ -6,11 +6,177 @@ import {
     getDocs,
     updateDoc,
     doc,
+    getDoc,
+    setDoc,
     serverTimestamp,
     orderBy,
     limit
 } from '../firebase-config.js';
 import * as CONSTANTS from './core/constants.js';
+
+// ========== PASSWORD GATE SYSTEM ==========
+async function initPasswordGate() {
+    // If already unlocked in this session, skip
+    if (sessionStorage.getItem('gateUnlocked') === 'true') {
+        removeGateOverlay();
+        return true;
+    }
+
+    try {
+        // Show the gate IMMEDIATELY so the user doesn't see the underlying page load
+        const gate = document.getElementById('password-gate');
+        gate.style.display = 'flex';
+
+        // Fetch passwords in background
+        const settingsRef = doc(db, CONSTANTS.COLLECTIONS.SETTINGS, 'gateKiosk');
+        const settingsDoc = await getDoc(settingsRef);
+
+        if (!settingsDoc.exists() || (!settingsDoc.data().validPasswords && !settingsDoc.data().password)) {
+            // No password set — backwards compatible, skip gate
+            removeGateOverlay();
+            return true;
+        }
+
+        // Get array of valid passwords, fallback to legacy single password if array doesn't exist yet
+        const validPasswords = settingsDoc.data().validPasswords || [settingsDoc.data().password];
+
+        // --- Primary: Code Entry ---
+        const codeForm = document.getElementById('password-gate-form');
+        const codeInput = document.getElementById('gate-code-input');
+        const codeError = document.getElementById('gate-error');
+
+        codeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const entered = codeInput.value.trim();
+            if (validPasswords.includes(entered)) {
+                sessionStorage.setItem('gateUnlocked', 'true');
+                removeGateOverlay();
+            } else {
+                codeError.classList.remove('hidden');
+                codeInput.classList.add('border-red-500');
+                codeInput.value = '';
+                codeInput.focus();
+                setTimeout(() => {
+                    codeError.classList.add('hidden');
+                    codeInput.classList.remove('border-red-500');
+                }, 3000);
+            }
+        });
+
+        // --- Toggle: Forgot Code? ---
+        const codeSection = document.getElementById('gate-code-section');
+        const emailSection = document.getElementById('gate-email-section');
+        const resetSection = document.getElementById('gate-reset-section');
+
+        document.getElementById('forgot-code-btn').addEventListener('click', () => {
+            codeSection.style.display = 'none';
+            emailSection.style.display = '';
+            document.getElementById('gate-email-input').focus();
+        });
+
+        document.getElementById('back-to-code-btn').addEventListener('click', () => {
+            emailSection.style.display = 'none';
+            codeSection.style.display = '';
+            codeInput.focus();
+        });
+
+        // --- Backup: Email Verification ---
+        const emailForm = document.getElementById('gate-email-form');
+        const emailInput = document.getElementById('gate-email-input');
+        const emailError = document.getElementById('gate-email-error');
+        const emailBtn = document.getElementById('gate-email-btn');
+
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim().toLowerCase();
+            if (!email) return;
+
+            emailBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...';
+            emailBtn.disabled = true;
+
+            try {
+                const q = query(
+                    collection(db, CONSTANTS.COLLECTIONS.USERS),
+                    where('email', '==', email),
+                    limit(1)
+                );
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    if (userData.role === CONSTANTS.ROLES.ADMIN) {
+                        // Admin verified — show reset section
+                        emailSection.style.display = 'none';
+                        resetSection.style.display = '';
+                        document.getElementById('gate-new-password').focus();
+                    } else {
+                        showEmailError('This email is not an admin account');
+                    }
+                } else {
+                    showEmailError('Not a registered user');
+                }
+            } catch (err) {
+                console.error('Email bypass error:', err);
+                showEmailError('Verification failed. Try again.');
+            } finally {
+                emailBtn.innerHTML = 'Verify Admin <i class="fas fa-shield-alt ml-2"></i>';
+                emailBtn.disabled = false;
+            }
+        });
+
+        function showEmailError(msg) {
+            emailError.textContent = msg;
+            emailError.classList.remove('hidden');
+            setTimeout(() => emailError.classList.add('hidden'), 3000);
+        }
+
+        // --- Reset: Set New Password ---
+        const resetForm = document.getElementById('gate-reset-form');
+        const newPassInput = document.getElementById('gate-new-password');
+
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = newPassInput.value.trim();
+            if (!newPass) return;
+
+            try {
+                await setDoc(settingsRef, { password: newPass }, { merge: true });
+                sessionStorage.setItem('gateUnlocked', 'true');
+                removeGateOverlay();
+            } catch (err) {
+                console.error('Reset password error:', err);
+                // Still let them in, but warn that password wasn't saved
+                alert('Entry granted, but the new code could not be saved. Please update it from the Admin Panel.');
+                sessionStorage.setItem('gateUnlocked', 'true');
+                removeGateOverlay();
+            }
+        });
+
+        // Skip reset — just enter
+        document.getElementById('skip-reset-btn').addEventListener('click', () => {
+            sessionStorage.setItem('gateUnlocked', 'true');
+            removeGateOverlay();
+        });
+
+        // Block further init until gate is passed
+        return false;
+
+    } catch (err) {
+        console.error('Password gate error:', err);
+        // On error, let them through to avoid lockout
+        removeGateOverlay();
+        return true;
+    }
+}
+
+function removeGateOverlay() {
+    const gate = document.getElementById('password-gate');
+    if (gate) {
+        gate.style.opacity = '0';
+        gate.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => gate.remove(), 300);
+    }
+}
 
 // Global showToast fallback if not imported
 const showToast = window.showToast || ((msg) => alert(msg));
@@ -33,10 +199,13 @@ let recentActivity = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+    // Password gate check FIRST — blocks UI until resolved
+    await initPasswordGate();
+
     // Check Auth 
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
-            window.location.replace('auth.html');
+            window.location.replace('login.html?redirect=gate-kiosk.html');
             return;
         }
 
@@ -170,12 +339,14 @@ function onScanSuccess(decodedText, decodedResult) {
     // Pause scanning implicitly by switching view
     // html5QrcodeScanner.pause(); // Optional
 
-    // Check if it's a URL and extract ID
+    // Check if it's a URL and extract ID or UID
     let queryText = decodedText;
     try {
         const url = new URL(decodedText);
         if (url.searchParams.has('id')) {
             queryText = url.searchParams.get('id');
+        } else if (url.searchParams.has('uid')) {
+            queryText = url.searchParams.get('uid');
         }
     } catch (e) {
         // Not a URL, use raw text
@@ -240,17 +411,32 @@ async function searchStudent(queryText) {
 
         // 2. If not found in cache (or cache empty), try Firestore Exact Match
         if (!foundUser) {
-            let q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), where('studentId', '==', qUpper), limit(1));
-            let snapshot = await getDocs(q);
-
-            if (snapshot.empty) {
-                q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), where('email', '==', queryText.toLowerCase()), limit(1));
-                snapshot = await getDocs(q);
+            // 2a. Direct Document UID match (e.g. from Digital ID QR scan)
+            if (queryText.length >= 20) {
+                try {
+                    const directDoc = await getDoc(doc(db, CONSTANTS.COLLECTIONS.USERS, queryText));
+                    if (directDoc.exists()) {
+                        foundUser = { id: directDoc.id, ...directDoc.data() };
+                    }
+                } catch (err) {
+                    console.warn('Direct UID lookup error:', err);
+                }
             }
 
-            if (!snapshot.empty) {
-                const doc = snapshot.docs[0];
-                foundUser = { id: doc.id, ...doc.data() };
+            // 2b. Student Roll Number or Email query
+            if (!foundUser) {
+                let q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), where('studentId', '==', qUpper), limit(1));
+                let snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    q = query(collection(db, CONSTANTS.COLLECTIONS.USERS), where('email', '==', queryText.toLowerCase()), limit(1));
+                    snapshot = await getDocs(q);
+                }
+
+                if (!snapshot.empty) {
+                    const docSnap = snapshot.docs[0];
+                    foundUser = { id: docSnap.id, ...docSnap.data() };
+                }
             }
         }
 
@@ -304,6 +490,9 @@ function renderStudentResult() {
     document.getElementById('student-photo').src = currentStudent.photoURL || `https://ui-avatars.com/api/?name=${currentStudent.displayName}&background=random`;
     document.getElementById('student-phone').textContent = currentStudent.phone || 'N/A';
     document.getElementById('student-room').textContent = 'Room Info N/A'; // Need to fetch booking or store in user profile
+    const branchYear = (currentStudent.studyingYear || '') + (currentStudent.branch ? ` (${currentStudent.branch})` : '');
+    const branchYearEl = document.getElementById('student-branch-year');
+    if (branchYearEl) branchYearEl.textContent = branchYear || 'N/A';
     document.getElementById('parent-phone').textContent = currentStudent.parentPhone || 'N/A';
 
     // Determining Action State

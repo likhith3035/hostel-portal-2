@@ -33,12 +33,34 @@ const handleSuccess = async (user) => {
 
         // Create user document if it doesn't exist
         if (!userDoc.exists()) {
+            const emailLower = user.email ? user.email.toLowerCase().trim() : '';
+            const emailPrefix = emailLower.split('@')[0];
+            const rollNumberPattern = /^[0-9]{2}kb[0-9a-z]{2}[0-9]{4}$/i;
+            const isStudentRoll = rollNumberPattern.test(emailPrefix);
+
+            const isEmailAdmin = !isStudentRoll && (
+                emailLower === 'kamilikhith@gmail.com' ||
+                emailLower === 'admin@nbkrist.org' ||
+                emailLower === 'warden@nbkrist.org' ||
+                (emailLower.endsWith('@nbkrist.org') && (emailPrefix === 'admin' || emailPrefix === 'warden' || emailPrefix.startsWith('admin') || emailPrefix.startsWith('warden')))
+            );
+            
+            // Auto-detect student profile details from email (Roll Number only)
+            let studentId = isStudentRoll ? emailPrefix.toUpperCase() : '';
+            let studentIdLast4 = studentId ? studentId.slice(-4) : '';
+            let studyingYear = ''; // Studying year is entered manually by the user
+            let branch = ''; // Branch is entered manually by the user
+
             await setDoc(userDocRef, {
                 uid: user.uid,
                 email: user.email,
                 displayName: user.displayName || user.email.split('@')[0],
                 photoURL: user.photoURL || null,
-                role: 'student',
+                role: isEmailAdmin ? 'admin' : 'student',
+                studentId: studentId,
+                studentIdLast4: studentIdLast4,
+                studyingYear: studyingYear,
+                branch: branch,
                 createdAt: serverTimestamp()
             });
         }

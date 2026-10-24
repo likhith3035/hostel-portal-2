@@ -143,8 +143,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 const style = statusStyles[c.status] || statusStyles[CONSTANTS.STATUS.PENDING];
 
+                let progressPercent = 0;
+                let step1Class = 'active';
+                let step2Class = '';
+                let step2Label = 'Assigned';
+                let step2Icon = 'fa-user-cog';
+                let step3Class = '';
+                let step4Class = '';
+
+                if (c.status === CONSTANTS.STATUS.REJECTED) {
+                    progressPercent = 33;
+                    step1Class = 'completed';
+                    step2Class = 'active text-red-500';
+                    step2Label = 'Rejected';
+                    step2Icon = 'fa-times-circle';
+                } else if (c.status === CONSTANTS.STATUS.IN_PROGRESS) {
+                    progressPercent = 66;
+                    step1Class = 'completed';
+                    step2Class = 'completed';
+                    step3Class = 'active';
+                } else if (c.status === CONSTANTS.STATUS.RESOLVED) {
+                    progressPercent = 100;
+                    step1Class = 'completed';
+                    step2Class = 'completed';
+                    step3Class = 'completed';
+                    step4Class = 'completed';
+                }
+
                 html += `
-                <div class="glass-panel p-6 rounded-[2rem] relative group hover:scale-[1.01] transition-all duration-300 border border-white/20 hover:border-iosBlue/30 hover:shadow-xl hover:shadow-blue-500/5 spring-click cursor-default overflow-hidden">
+                <div class="glass-panel p-6 rounded-[2rem] relative group hover:scale-[1.01] transition-all duration-300 border border-white/20 hover:border-iosBlue/30 hover:shadow-xl hover:shadow-blue-500/5 spring-click cursor-default overflow-hidden premium-card-hover">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-white/0 rounded-bl-[4rem] -mr-6 -mt-6 pointer-events-none"></div>
                     
                     <div class="flex justify-between items-start mb-4 relative z-10">
@@ -169,8 +196,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </span>
                     </div>
 
-                    <div class="bg-gray-50/50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5">
+                    <div class="bg-gray-50/50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/5 mb-4">
                         <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium">${escapeHTML(c.description)}</p>
+                    </div>
+
+                    <!-- Resolution Status Timeline -->
+                    <div class="w-full bg-gray-50/50 dark:bg-black/10 p-4 rounded-2xl border border-gray-100 dark:border-white/5 relative z-10">
+                        <div class="status-timeline">
+                            <div class="timeline-progress">
+                                <div class="timeline-progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <div class="timeline-step ${step1Class}">
+                                <div class="timeline-dot"><i class="fas fa-file-invoice"></i></div>
+                                <div class="timeline-label">Reported</div>
+                            </div>
+                            <div class="timeline-step ${step2Class}">
+                                <div class="timeline-dot"><i class="fas ${step2Icon}"></i></div>
+                                <div class="timeline-label">${step2Label}</div>
+                            </div>
+                            <div class="timeline-step ${step3Class}">
+                                <div class="timeline-dot"><i class="fas fa-tools"></i></div>
+                                <div class="timeline-label">In Progress</div>
+                            </div>
+                            <div class="timeline-step ${step4Class}">
+                                <div class="timeline-dot"><i class="fas fa-check-double"></i></div>
+                                <div class="timeline-label">Resolved</div>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
             });

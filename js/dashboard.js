@@ -4,6 +4,7 @@ import {
     collection,
     doc,
     getDoc,
+    getDocs,
     query,
     where,
     orderBy,
@@ -44,10 +45,26 @@ const initNoticeBoard = () => {
         snap.forEach(doc => {
             const d = doc.data();
             const date = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+            const cat = d.category || 'General';
+
+            let badgeHtml = '';
+            if (cat === 'Urgent') {
+                badgeHtml = `<span class="text-[8px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded-md">Urgent 🚨</span>`;
+            } else if (cat === 'Mess') {
+                badgeHtml = `<span class="text-[8px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-md">Mess 🍳</span>`;
+            } else if (cat === 'Rules') {
+                badgeHtml = `<span class="text-[8px] font-black uppercase tracking-widest bg-purple-500/10 text-purple-500 border border-purple-500/20 px-2 py-0.5 rounded-md">Rules 📜</span>`;
+            } else {
+                badgeHtml = `<span class="text-[8px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2 py-0.5 rounded-md">General 📢</span>`;
+            }
+
             html += `
-            <div class="p-4 rounded-2xl bg-white/50 dark:bg-white/5 border border-transparent hover:border-iosBlue/20 dark:hover:border-iosBlue/40 transition-all group spring-click cursor-default mb-3 last:mb-0">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[9px] font-bold text-iosBlue bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-md uppercase tracking-wider">${escapeHTML(date)}</span>
+            <div class="p-4 rounded-2xl bg-white/60 dark:bg-white/5 border border-transparent hover:border-iosBlue/20 dark:hover:border-iosBlue/40 transition-all group spring-click cursor-default mb-3 last:mb-0">
+                <div class="flex justify-between items-center mb-2.5">
+                    <div class="flex items-center gap-2">
+                        ${badgeHtml}
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">${escapeHTML(date)}</span>
+                    </div>
                     <div class="w-1.5 h-1.5 rounded-full bg-iosBlue opacity-40 group-hover:opacity-100 transition-opacity"></div>
                 </div>
                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">${escapeHTML(d.message || d.text || 'No content')}</p>
@@ -183,11 +200,94 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // --- 4. MENU GRID ---
+        // --- 4. MENU GRID WITH COUNTDOWN & RATINGS ---
         const dayName = new Date().toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
         const h = new Date().getHours();
         let activeMeal = 'breakfast';
-        if (h >= 10) activeMeal = 'lunch'; if (h >= 15) activeMeal = 'snacks'; if (h >= 18) activeMeal = 'dinner';
+        if (h >= 9) activeMeal = 'lunch'; if (h >= 14) activeMeal = 'snacks'; if (h >= 17) activeMeal = 'dinner';
+
+        const mealTimes = {
+            breakfast: { label: 'Breakfast', end: { h: 9, m: 0 } },
+            lunch: { label: 'Lunch', end: { h: 14, m: 0 } },
+            snacks: { label: 'Snacks', end: { h: 17, m: 30 } },
+            dinner: { label: 'Dinner', end: { h: 21, m: 0 } }
+        };
+
+        const setupMessCountdown = () => {
+            const el = document.getElementById('mess-countdown');
+            if (!el) return;
+
+            const update = () => {
+                const now = new Date();
+                const currH = now.getHours();
+
+                let active = 'breakfast';
+                if (currH >= 9 && currH < 14) active = 'lunch';
+                else if (currH >= 14 && currH < 17.5) active = 'snacks';
+                else if (currH >= 17.5) active = 'dinner';
+
+                const config = mealTimes[active];
+                const endToday = new Date(now);
+                endToday.setHours(config.end.h, config.end.m, 0, 0);
+
+                let diff = endToday - now;
+                if (diff < 0) {
+                    el.innerText = `${active.toUpperCase()} CLOSED`;
+                    el.classList.remove('hidden');
+                } else {
+                    const diffMins = Math.floor(diff / 60000);
+                    const diffSecs = Math.floor((diff % 60000) / 1000);
+                    el.innerHTML = `<i class="far fa-clock mr-1 text-iosBlue animate-pulse"></i> ${active.toUpperCase()} ENDS IN ${diffMins}m ${diffSecs}s`;
+                    el.classList.remove('hidden');
+                }
+            };
+            update();
+            setInterval(update, 1000);
+        };
+
+        const loadRatingsSummary = async (day, mealKeys) => {
+            try {
+                const ratingsQ = query(
+                    collection(db, CONSTANTS.COLLECTIONS.MEAL_RATINGS),
+                    where('day', '==', day)
+                );
+                const snap = await getDocs(ratingsQ);
+                const ratings = {};
+                mealKeys.forEach(k => ratings[k] = { like: 0, total: 0 });
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const meal = data.meal;
+                    if (ratings[meal]) {
+                        ratings[meal].total++;
+                        if (data.rating === 'like') {
+                            ratings[meal].like++;
+                        }
+                    }
+                });
+
+                mealKeys.forEach(k => {
+                    const ratingWidget = document.getElementById(`rating-summary-${k}`);
+                    if (ratingWidget) {
+                        const stats = ratings[k];
+                        if (stats.total > 0) {
+                            const percent = Math.round((stats.like / stats.total) * 100);
+                            ratingWidget.innerHTML = `
+                                <div class="flex items-center gap-1 mt-1 text-[10px] font-bold text-green-600 dark:text-green-400">
+                                    <i class="fas fa-heart text-red-500 mr-1"></i> ${percent}% liked (${stats.total})
+                                </div>`;
+                        } else {
+                            ratingWidget.innerHTML = `
+                                <div class="flex items-center gap-1 mt-1 text-[10px] font-bold text-gray-400">
+                                    <i class="far fa-heart mr-1"></i> No ratings
+                                </div>`;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Error loading ratings summary:", e);
+            }
+        };
 
         getDoc(doc(db, CONSTANTS.COLLECTIONS.MESS_MENU, dayName)).then(menuDoc => {
             const grid = document.getElementById('daily-menu-grid');
@@ -204,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const item = menuDoc.data()[m.k]?.item || 'Not set';
                     const isActive = m.k === activeMeal;
                     grid.insertAdjacentHTML('beforeend', `
-                    <div class="glass-panel p-5 rounded-[2.2rem] flex flex-col justify-between h-36 relative overflow-hidden group transition-all duration-300 ${isActive ? 'ring-2 ring-iosBlue bg-blue-50/80 dark:bg-blue-500/20' : 'hover:bg-white/80 dark:hover:bg-white/10 hover:-translate-y-1'}">
+                    <div class="glass-panel p-5 rounded-[2.2rem] flex flex-col justify-between h-40 relative overflow-hidden group transition-all duration-300 premium-card-hover ${isActive ? 'ring-2 ring-iosBlue bg-blue-50/80 dark:bg-blue-500/20' : 'hover:bg-white/80 dark:hover:bg-white/10'}">
                         <div class="flex justify-between items-start z-10">
                             <div class="w-10 h-10 rounded-2xl flex items-center justify-center ${isActive ? 'bg-iosBlue text-white shadow-lg shadow-blue-500/40' : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-gray-500 group-hover:bg-white dark:group-hover:bg-white/20'} transition-colors">
                                 <i class="fas ${m.i}"></i>
@@ -213,11 +313,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="z-10 mt-auto">
                             <p class="font-bold text-lg leading-tight mb-0.5 line-clamp-1 text-gray-900 dark:text-white">${escapeHTML(item)}</p>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${m.t}</p>
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${m.t}</p>
+                                <div id="rating-summary-${m.k}"></div>
+                            </div>
                         </div>
                         ${isActive ? '<div class="absolute top-0 right-0 p-2"><span class="flex h-2 w-2"><span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span></div>' : ''}
                     </div>`);
                 });
+
+                setupMessCountdown();
+                loadRatingsSummary(dayName, meals.map(m => m.k));
             } else {
                 grid.innerHTML = '<p class="text-center col-span-4 text-gray-400 p-8">Menu not available.</p>';
             }
