@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hostel-portal-v29';
+const CACHE_NAME = 'hostel-portal-v30';
 const ASSETS_TO_CACHE = [
     './',
     'index.html',

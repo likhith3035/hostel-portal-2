@@ -271,6 +271,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             showCancelButton: true,
             confirmButtonText: confirmText,
             cancelButtonText: 'Cancel',
+            hideClass: {
+                popup: '',
+                backdrop: ''
+            },
             customClass: {
                 popup: 'bg-white dark:bg-[#1C1C1E] text-gray-900 dark:text-white rounded-[2rem] border border-gray-100 dark:border-white/10 shadow-2xl p-6 sm:p-8',
                 title: 'text-xl font-bold text-gray-900 dark:text-white mt-2',
@@ -279,6 +283,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cancelButton: 'bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-5 rounded-xl transition-all ml-3'
             },
             buttonsStyling: false
+        }).then(result => {
+            if (typeof Swal !== 'undefined') {
+                try { Swal.close(); } catch (_) {}
+            }
+            document.querySelectorAll('.swal2-container').forEach(el => el.remove());
+            document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+            return result;
         });
     };
 
@@ -1631,22 +1644,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.deleteComplaint = (id) => {
-        Swal.fire({
-            title: 'Delete Complaint?',
-            text: 'This action cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel',
-            customClass: {
-                popup: 'bg-white dark:bg-[#1C1C1E] text-gray-900 dark:text-white rounded-[2rem] border border-gray-100 dark:border-white/10 shadow-2xl p-6 sm:p-8',
-                title: 'text-xl font-bold text-gray-900 dark:text-white mt-2',
-                htmlContainer: 'text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed',
-                confirmButton: 'bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 transition-all transform hover:scale-105',
-                cancelButton: 'bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-5 rounded-xl transition-all ml-3'
-            },
-            buttonsStyling: false
-        }).then(result => {
+        showConfirm('Delete Complaint?', 'This action cannot be undone.', 'Yes, delete it!', true).then(result => {
             if (result.isConfirmed) {
                 window.safeAsync(async () => {
                     await deleteDoc(doc(db, CONSTANTS.COLLECTIONS.COMPLAINTS, id));
