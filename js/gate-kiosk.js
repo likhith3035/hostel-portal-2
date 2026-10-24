@@ -483,6 +483,23 @@ async function fetchActiveOutpass(student) {
     }
 }
 
+function generateWhatsAppAlertUrl(phone, actionType, outpass, student) {
+    if (!phone) return null;
+    const cleanDigits = phone.replace(/[^0-9]/g, '');
+    if (cleanDigits.length < 10) return null;
+    const fullNumber = cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
+    const studentName = student?.displayName || 'Student';
+    const studentId = student?.studentId ? ` (${student.studentId})` : '';
+    const actionText = actionType === 'OUT' ? 'EXITED the hostel gate' : 'safely RETURNED to the hostel';
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const destination = outpass?.destination ? ` Destination: ${outpass.destination}.` : '';
+
+    const text = `*NBKRIST Hostel Gate Alert*\n\nDear Parent, your ward *${studentName}*${studentId} has ${actionText} on ${dateStr} at ${timeStr}.${destination}\n\n- NBKRIST Security Office`;
+    return `https://wa.me/${fullNumber}?text=${encodeURIComponent(text)}`;
+}
+
 function renderStudentResult() {
     // Populate Student Info
     document.getElementById('student-name').textContent = currentStudent.displayName || 'Unnamed';
@@ -493,7 +510,21 @@ function renderStudentResult() {
     const branchYear = (currentStudent.studyingYear || '') + (currentStudent.branch ? ` (${currentStudent.branch})` : '');
     const branchYearEl = document.getElementById('student-branch-year');
     if (branchYearEl) branchYearEl.textContent = branchYear || 'N/A';
-    document.getElementById('parent-phone').textContent = currentStudent.parentPhone || 'N/A';
+    const parentContactNum = currentOutpass?.parentContact || currentStudent?.parentPhone || currentStudent?.parentContact || '';
+    const parentPhoneEl = document.getElementById('parent-phone');
+    if (parentPhoneEl) parentPhoneEl.textContent = parentContactNum || 'N/A';
+
+    const waChatBtn = document.getElementById('parent-wa-btn');
+    if (waChatBtn) {
+        const cleanDigits = (parentContactNum || '').replace(/[^0-9]/g, '');
+        if (cleanDigits.length >= 10) {
+            const fullNumber = cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits;
+            waChatBtn.href = `https://wa.me/${fullNumber}`;
+            waChatBtn.classList.remove('hidden');
+        } else {
+            waChatBtn.classList.add('hidden');
+        }
+    }
 
     // Determining Action State
     const actionArea = document.getElementById('action-area');
@@ -507,10 +538,7 @@ function renderStudentResult() {
 
     if (currentOutpass) {
         passTypeBadge.classList.remove('hidden');
-        passTypeBadge.textContent = "OUTPASS"; // Could contain type like 'Medical', 'Home'
-
-        // CASE 1: Has an APPROVED outpass
-        // Sub-case: Has he left already? (gateOutTime exists)
+        passTypeBadge.textContent = "OUTPASS";
 
         const hasLeft = !!currentOutpass.gateOutTime;
         const hasReturned = !!currentOutpass.gateInTime;
@@ -518,9 +546,7 @@ function renderStudentResult() {
         // Helper to format string dates or timestamps
         const formatTimeVal = (val) => {
             if (!val) return '--';
-            // If firestore timestamp
             if (val.toDate) return val.toDate().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            // If string YYYY-MM-DD HH:mm
             return new Date(val).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         };
 
@@ -552,9 +578,16 @@ function renderStudentResult() {
             header.className = 'p-6 bg-slate-700 transition-colors duration-300';
             statusText.textContent = 'No Active Outpass';
             statusIcon.className = 'fas fa-shield-alt';
+            const waReturnUrl = generateWhatsAppAlertUrl(parentContactNum, 'IN', currentOutpass, currentStudent);
             actionArea.innerHTML = `
                     <p class="text-slate-400 mb-4">Student is currently in hostel (Previous pass completed).</p>
                     ${timeDetails}
+                    ${waReturnUrl ? `
+                    <a href="${waReturnUrl}" target="_blank"
+                       class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-95 transition-all">
+                       <i class="fab fa-whatsapp text-lg"></i>
+                       <span>Send Return Alert to Parent</span>
+                    </a>` : ''}
                 `;
             passTypeBadge.classList.add('hidden');
             return;
@@ -565,6 +598,7 @@ function renderStudentResult() {
             header.className = 'p-6 bg-amber-500 transition-colors duration-300';
             statusText.textContent = 'ON LEAVE';
             statusIcon.className = 'fas fa-walking';
+            const waExitUrl = generateWhatsAppAlertUrl(parentContactNum, 'OUT', currentOutpass, currentStudent);
 
             actionArea.innerHTML = `
                     ${timeDetails}
@@ -572,6 +606,12 @@ function renderStudentResult() {
                         class="w-full py-4 text-xl font-black rounded-xl bg-white text-amber-600 hover:bg-amber-50 shadow-lg transform active:scale-95 transition-all">
                         MARK RETURN <i class="fas fa-sign-in-alt ml-2"></i>
                     </button>
+                    ${waExitUrl ? `
+                    <a href="${waExitUrl}" target="_blank"
+                       class="w-full mt-3 py-3 px-4 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all">
+                       <i class="fab fa-whatsapp text-lg"></i>
+                       <span>Send Exit Alert to Parent</span>
+                    </a>` : ''}
                 `;
 
         } else {

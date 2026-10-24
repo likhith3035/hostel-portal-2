@@ -285,10 +285,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </div>
                                 </div>
 
-                                <!-- QR Code Section -->
-                                <div class="flex flex-col items-center justify-center mb-6 p-4 bg-white border-2 border-dashed border-gray-200 rounded-xl">
-                                    <div id="qrcode-${doc.id}" class="qrcode-container mb-2"></div>
-                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Scan at Gate</div>
+                                <!-- QR Code Section with Dynamic Anti-Screenshot Watermark -->
+                                <div class="flex flex-col items-center justify-center mb-6 p-5 bg-white dark:bg-black/20 border-2 border-dashed border-emerald-400/50 rounded-2xl relative overflow-hidden shadow-inner">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Authentic
+                                    </div>
+                                    <div id="qrcode-${doc.id}" class="qrcode-container mb-2 p-2 bg-white rounded-xl shadow-sm"></div>
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Scan at Gate</div>
+                                    <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold">
+                                        <i class="fas fa-clock text-[10px] animate-pulse"></i>
+                                        <span class="live-clock-ticker">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                    </div>
                                 </div>
 
                                 <div class="border-t-2 border-dashed border-gray-100 pt-6 text-center">
@@ -478,5 +485,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     });
+    // Live Dynamic Anti-Screenshot Watermark Clock
+    if (!window.outpassLiveClockTimer) {
+        window.outpassLiveClockTimer = setInterval(() => {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.querySelectorAll('.live-clock-ticker').forEach(el => {
+                el.textContent = timeStr;
+            });
+        }, 1000);
+    }
 });
 

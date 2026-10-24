@@ -1,0 +1,28 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/login", "destination": "/login.html" },
+      { "source": "/booking", "destination": "/booking.html" },
+      { "source": "/outpass", "destination": "/outpass.html" },
+      { "source": "/complaints", "destination": "/complaints.html" },
+      { "source": "/rules", "destination": "/rules.html" },
+      { "source": "/profile", "destination": "/profile.html" },
+      { "source": "/mess-menu", "destination": "/mess-menu.html" },
+      { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/gate-kiosk", "destination": "/gate-kiosk.html" },
+      { "source": "/id-checker", "destination": "/id-checker.html" },
+      { "source": "/id-card", "destination": "/id-card.html" }
+    ]
+  }
+}

@@ -27,6 +27,15 @@ service cloud.firestore {
       );
     }
 
+    function isStaff() {
+      // Check if the user is an admin or authorized staff (warden, security)
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'warden', 'security'])
+      );
+    }
+
     function isSafeRoleChange() {
       // Allow if admin, OR if role field not in request, OR (for new docs allow only 'student', for existing docs prevent changes)
       return isAdmin() || 
@@ -93,12 +102,12 @@ service cloud.firestore {
 
     match /outpasses/{outpassId} {
       allow read: if isSignedIn() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+        (resource.data.userId == request.auth.uid || isStaff());
 
       allow create: if isSignedIn() &&
         request.resource.data.userId == request.auth.uid;
 
-      allow update: if isAdmin() || (
+      allow update: if isStaff() || (
         isSignedIn() &&
         resource.data.userId == request.auth.uid &&
         isNotChanging('status')
@@ -113,12 +122,12 @@ service cloud.firestore {
 
     match /complaints/{complaintId} {
       allow read: if isSignedIn() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+        (resource.data.userId == request.auth.uid || isStaff());
 
       allow create: if isSignedIn() &&
         request.resource.data.userId == request.auth.uid;
 
-      allow update: if isAdmin() || (
+      allow update: if isStaff() || (
         isSignedIn() &&
         resource.data.userId == request.auth.uid &&
         isNotChanging('status')

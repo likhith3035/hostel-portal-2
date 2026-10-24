@@ -940,3 +940,40 @@ document.addEventListener('click', (e) => {
     document.body.style.opacity = '0';
     setTimeout(() => { window.location.href = href; }, 150);
 });
+
+// Ambient Campus Network Monitor (Offline / Online Indicator)
+const initNetworkMonitor = () => {
+    let offlinePill = document.getElementById('network-status-pill');
+    if (!offlinePill) {
+        offlinePill = document.createElement('div');
+        offlinePill.id = 'network-status-pill';
+        offlinePill.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-full text-xs font-bold shadow-2xl backdrop-blur-xl transition-all duration-300 pointer-events-none transform translate-y-16 opacity-0 flex items-center gap-2';
+        document.body.appendChild(offlinePill);
+    }
+
+    const showNetworkStatus = (online) => {
+        if (!online) {
+            offlinePill.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-full text-xs font-bold shadow-2xl backdrop-blur-xl transition-all duration-300 pointer-events-none transform translate-y-0 opacity-100 flex items-center gap-2 bg-amber-500/95 text-white border border-amber-300/30';
+            offlinePill.innerHTML = '<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Offline Mode &bull; Using cached data';
+        } else {
+            offlinePill.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-full text-xs font-bold shadow-2xl backdrop-blur-xl transition-all duration-300 pointer-events-none transform translate-y-0 opacity-100 flex items-center gap-2 bg-emerald-600/95 text-white border border-emerald-300/30';
+            offlinePill.innerHTML = '<span class="w-2 h-2 rounded-full bg-white"></span> Back Online &bull; Syncing';
+            setTimeout(() => {
+                offlinePill.style.transform = 'translateY(4rem) translateX(-50%)';
+                offlinePill.style.opacity = '0';
+            }, 3000);
+        }
+    };
+
+    window.addEventListener('offline', () => showNetworkStatus(false));
+    window.addEventListener('online', () => showNetworkStatus(true));
+    if (!navigator.onLine) {
+        showNetworkStatus(false);
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNetworkMonitor);
+} else {
+    initNetworkMonitor();
+}
