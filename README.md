@@ -97,6 +97,125 @@ Traditional hostel management relies on handwritten logbooks, paper outpass slip
 
 ---
 
+## 🏗️ System Architecture
+
+The architecture follows a decoupled, secure **Serverless JAMstack** topology:
+
+```mermaid
+flowchart TB
+    subgraph ClientLayer["🖥️ Frontend Client (PWA / SPA)"]
+        UI["Tailwind CSS + Alpine.js + Vanilla ES Modules"]
+        AG["Auth Guard & Route Validator (auth-guard.js)"]
+        SW["Service Worker v31 (Offline Cache & Sync)"]
+    end
+
+    subgraph CDNLayer["☁️ Netlify Global Edge CDN"]
+        Edge["Static Asset Distribution & Clean URL Rewrites (_redirects)"]
+    end
+
+    subgraph FirebaseLayer["🔥 Firebase Backend-as-a-Service"]
+        Auth["Firebase Authentication<br/>(Email/Password & Role Tokens)"]
+        Firestore[("Cloud Firestore<br/>(Real-Time Listeners & Atomic Transactions)")]
+        Rules["Security Rules v2<br/>(Role-Based Access Control & Immutability)"]
+    end
+
+    subgraph ExternalServices["📡 Third-Party Integrations"]
+        EmailJS["EmailJS Service<br/>(Transactional Student Notifications)"]
+        QR["html5-qrcode / QRCode.js<br/>(Scanner & Cryptographic QR Generator)"]
+        Charts["Chart.js<br/>(Real-time Occupancy & Trend Visuals)"]
+    end
+
+    Edge --> ClientLayer
+    ClientLayer --> AG
+    AG --> Auth
+    ClientLayer --> Firestore
+    Firestore --- Rules
+    ClientLayer --> EmailJS
+    ClientLayer --> QR
+    ClientLayer --> Charts
+```
+
+---
+
+## 🔄 Key Workflows & Data Flows
+
+### 1. Digital Outpass & Gate Verification Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor S as Student
+    actor W as Warden / Admin
+    participant FS as Cloud Firestore
+    actor G as Gate Security (Kiosk)
+
+    S->>FS: Submit outpass request (destination, dates, parent phone, reason)
+    Note over S,FS: Status: 'pending'
+    W->>FS: Review pending requests on Admin Panel
+    W->>FS: Click "Approve Outpass"
+    Note over W,FS: Status updated to 'approved'
+    FS-->>S: Real-time listener triggers QR generation on Student Portal
+    S->>G: Presents Digital Outpass QR at Security Gate
+    G->>G: Scans QR code via Gate Kiosk camera (html5-qrcode)
+    G->>FS: Queries outpass record & updates check-out timestamp
+    Note over G,FS: Status: 'departed' / Logged to security audit
+    G-->>S: Gate clearance granted!
+```
+
+---
+
+### 2. Atomic Room Booking Flow
+
+To prevent race conditions where two students apply for the same bed at the exact same millisecond, room reservations run inside **Firestore atomic transactions**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> BrowseHeatmap: Student views live floor & room availability
+    BrowseHeatmap --> SelectBed: Chooses Vacant Bed (e.g., Room 104 - Bed B)
+    SelectBed --> TransactionLock: Submits reservation request
+    
+    state TransactionLock {
+        [*] --> CheckStatus: Read current bed state in Firestore
+        CheckStatus --> Confirmed: Bed is vacant -> Mark bed 'pending' & write booking doc
+        CheckStatus --> AbortRace: Bed already taken by concurrent user
+    }
+    
+    AbortRace --> BrowseHeatmap: Alert: "Bed already claimed. Pick another."
+    Confirmed --> WardenReview: Booking awaits Warden confirmation
+    WardenReview --> Approved: Warden Approves -> Bed permanently 'taken'
+    WardenReview --> Rejected: Warden Rejects -> Bed returned to 'available'
+    Approved --> [*]
+    Rejected --> [*]
+```
+
+---
+
+### 3. Dedicated Gate Kiosk & Scanner Flow
+
+```mermaid
+flowchart TD
+    Start(["Security Officer opens /gate-kiosk"]) --> GateCheck{"PIN Screen Locked?"}
+    GateCheck -- Yes --> EnterPIN["Enter Security PIN (Settings collection)"]
+    EnterPIN -- Valid PIN --> UnlockKiosk["Kiosk Workspace Unlocked (Session Cached)"]
+    GateCheck -- No --> UnlockKiosk
+
+    UnlockKiosk --> SelectMode{"Select Verification Method"}
+    SelectMode -- Camera Scan --> CamScan["Activate Device Camera (html5-qrcode)"]
+    SelectMode -- Manual Entry --> Manual["Enter Student ID or Outpass UID"]
+
+    CamScan --> ParseQR["Parse Scanned QR String"]
+    Manual --> QueryFS["Fetch Student / Outpass Document"]
+    ParseQR --> QueryFS
+
+    QueryFS --> Valid{"Record Found & Approved?"}
+    Valid -- Valid Approved Outpass --> Grant["🟢 Clearance APPROVED<br/>Display Photo, Room, Parent Phone & Timestamp"]
+    Valid -- Expired / Pending --> Reject["🔴 Clearance DENIED<br/>Display Warning & Contact Warden"]
+
+    Grant --> AutoLog["Record Entry/Exit to Security Audit Log"]
+```
+
+---
+
 ## ✨ Highlights
 
 <table>
@@ -183,81 +302,6 @@ Traditional hostel management relies on handwritten logbooks, paper outpass slip
 |:---:|:---:|
 | <img src="assets/images/admin.png" alt="Admin Dashboard" width="400"/> | <img src="assets/images/mobile.png" alt="Mobile Responsive" width="400"/> |
 | *Comprehensive management* | *Fully responsive design* |
-
----
-
-## 🔄 How It Works
-
-### 🎫 Outpass Workflow
-```
-Student                    Admin                     Gate
-  │                          │                        │
-  ├── Submit Request ──────► │                        │
-  │                          ├── Review & Approve ──► │
-  │   ◄── QR Code Generated ─┤                       │
-  │                          │                        │
-  ├── Show QR at Gate ──────────────────────────────► │
-  │                          │                   Scan & Log
-```
-
-### 🛏️ Room Booking Flow
-```
-Student                    Admin                   Database
-  │                          │                        │
-  ├── View Heatmap ◄─────────────────────────────── Rooms
-  ├── Select Bed ──────────► │                        │
-  │                          ├── Approve ───────────► │
-  │   ◄── Confirmed ─────────┤    (Transaction)      │
-  │                          │                        │
-  ├── Request Vacate ──────► │                        │
-  │                          ├── Force Vacate ──────► │
-  │   ◄── Bed Freed ─────────┤                       │
-```
-
-### 🍽️ Mess Menu & Ratings
-```
-Admin                     System                   Student
-  │                          │                        │
-  ├── Update Menu ─────────► │                        │
-  │                          ├── Auto-highlight ────► │
-  │                          │   current meal         │
-  │                          │                        ├── Like / Pass
-  │   ◄── View Analytics ────┤ ◄── Ratings ──────────┤
-```
-
----
-
----
-
-## 🏗️ Architecture Overview
-
-The system follows a **Serverless JAMstack** architecture, ensuring high availability and low latency.
-
-```mermaid
-graph TD
-    Client[🖥️ Client Side <br> HTML5 + Alpine.js] -->|Auth & Data| FB[🔥 Firebase Service]
-    FB -->|Authentication| Auth[Firebase Auth]
-    FB -->|Real-time DB| Firestore[Cloud Firestore]
-    
-    subgraph Data Flow
-    Firestore -->|Live Sync| Client
-    Client -->|Transactions| Firestore
-    end
-    
-    Netlify[☁️ Netlify CDN] -->|Serves Static Assets| Client
-```
-
----
-
-## 🔐 Security Considerations
-
-Security is a core component of this architecture, not an afterthought.
-
-- **🛡️ Role-Based Route Guards**: Client-side redirect logic prevents unauthorized access to admin/staff pages.
-- **🔥 Firestore Security Rules**: Server-side validation ensures users can only read/write their own data.
-- **⚡ Transactional Integrity**: Room bookings use **Firestore Transactions** to guarantee atomic updates.
-- **📝 Audit Logging**: Critical actions (bans, approvals, deletions) are immutably logged for administrative review.
-- **✅ Input Sanitization**: All user inputs are sanitized to prevent XSS attacks.
 
 ---
 
