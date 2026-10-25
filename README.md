@@ -1,55 +1,99 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/🏨_NBKRIST-Hostel_Portal-6C63FF?style=for-the-badge" alt="NBKRIST Hostel Portal" />
+  <img src="assets/images/nbkrist-logo.png" alt="NBKRIST Logo" width="120" style="border-radius: 50%;" />
 </p>
 
-<h3 align="center">🏨 NBKRIST Hostel Portal</h3>
+<h1 align="center">🏨 NBKRIST Hostel Portal</h1>
 
 <p align="center">
-  <i>A comprehensive, modern, and mobile-responsive hostel management system.</i><br/>
-  <sub>Full-stack serverless architecture • Firebase • Real-time sync • Glassmorphism UI</sub>
+  <b>A modern, serverless, mobile-responsive hostel management ecosystem.</b><br/>
+  <sub>Real-Time Firestore Sync • Atomic Double-Booking Protection • Cryptographic QR Gate Passes • Glassmorphism UI</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-🟢_Live-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/Firebase-Serverless-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-Styled-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/Alpine.js-Reactive-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" />
-  <img src="https://img.shields.io/badge/Netlify-Deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" />
-  <br/>
-  <br/>
+  <a href="https://nbkristhostelportal.netlify.app/"><img src="https://img.shields.io/badge/Status-🟢_Live_Production-brightgreen?style=for-the-badge" alt="Production Status" /></a>
+  <a href="https://nbkristhostelportal.netlify.app/"><img src="https://img.shields.io/badge/Demo-🌐_Explore_Portal-6C63FF?style=for-the-badge" alt="Live Demo" /></a>
+  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/likhith3035/hostel-portal-2"><img src="https://img.shields.io/badge/Deploy-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Deploy to Netlify" /></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Architecture-JAMstack_Serverless-FF6F00?style=flat-square&logo=jamstack&logoColor=white" alt="JAMstack" />
+  <img src="https://img.shields.io/badge/Database-Cloud_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firestore" />
+  <img src="https://img.shields.io/badge/Auth-Firebase_Authentication-FF8F00?style=flat-square&logo=firebase&logoColor=white" alt="Firebase Auth" />
+  <img src="https://img.shields.io/badge/Styling-Tailwind_CSS_CDN-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/PWA-Service_Worker_v31-5A67D8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Security-RBAC_%26_Rules_v2-10B981?style=flat-square&logo=shield&logoColor=white" alt="Security" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="MIT License" />
+</p>
+
+<p align="center">
   <a href="https://github.com/likhith3035/hostel-portal-2/stargazers"><img src="https://img.shields.io/github/stars/likhith3035/hostel-portal-2?style=flat-square&color=yellow" alt="GitHub stars"/></a>
   <a href="https://github.com/likhith3035/hostel-portal-2/network/members"><img src="https://img.shields.io/github/forks/likhith3035/hostel-portal-2?style=flat-square&color=orange" alt="GitHub forks"/></a>
   <a href="https://github.com/likhith3035/hostel-portal-2/issues"><img src="https://img.shields.io/github/issues/likhith3035/hostel-portal-2?style=flat-square&color=red" alt="GitHub issues"/></a>
-  <br/>
-  <br/>
-  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/likhith3035/hostel-portal-2">
-    <img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://nbkristhostelportal.netlify.app/">
-    <img src="https://img.shields.io/badge/🌐_LIVE_DEMO-Visit_Now-6C63FF?style=for-the-badge" alt="Live Demo" />
-  </a>
 </p>
 
 > [!NOTE]
-> This is a **student academic project** developed for learning purposes. It is **NOT** the official portal of NBKR Institute of Science and Technology.
+> **Academic Project Disclaimer:** This platform is an independent student academic project engineered for learning and demonstration purposes. It is **NOT** the official web portal of NBKR Institute of Science and Technology (NBKRIST).
 
 ---
 
-## 🎯 Why This Project?
+## 📑 Table of Contents
 
-> *"Designed to bridge the gap between academic theory and production-grade systems."*
+- [Overview](#-overview)
+- [Why NBKRIST Hostel Portal?](#-why-nbkrist-hostel-portal)
+- [System Architecture](#-system-architecture)
+- [Key Workflows & Data Flows](#-key-workflows--data-flows)
+  - [1. Digital Outpass & Gate Verification](#1-digital-outpass--gate-verification-workflow)
+  - [2. Atomic Room Booking with Concurrency Protection](#2-atomic-room-booking-flow)
+  - [3. Dedicated Gate Kiosk & Scanner Flow](#3-dedicated-gate-kiosk--scanner-flow)
+- [Feature Matrix by Role](#-feature-matrix-by-role)
+  - [Student Portal](#-student-portal)
+  - [Admin & Warden Command Center](#-admin--warden-command-center)
+  - [Security & Gate Kiosk](#-security--gate-kiosk)
+- [UI / UX Design Highlights](#-ui--ux-design-highlights)
+- [Repository Structure](#-repository-structure)
+- [Database Schema & Security Architecture](#-database-schema--security-architecture)
+- [Quick Start & Local Setup](#-quick-start--local-setup)
+- [Configuration Reference](#-configuration-reference)
+- [Production Deployment](#-production-deployment)
+- [Progressive Web App (PWA) & Cache Management](#-progressive-web-app-pwa--cache-management)
+- [Troubleshooting & FAQs](#-troubleshooting--faqs)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [Developer & Institutional Credits](#-developer--institutional-credits)
+- [License](#-license)
 
-This project was built to simulate a **real-world hostel management ecosystem**, focusing on scalability, security, and user experience without relying on heavy frontend frameworks.
+---
 
-- **Role-Based Authentication**: Secure access control for **Students**, **Admins**, and **Security Personnel**.
-- **Real-Time Synchronization**: Instant updates for room bookings and complaints using **Firestore Listeners**.
-- **Transaction-Safe Logic**: Preventing race conditions in room booking scenarios (double-booking protection).
-- **Serverless Architecture**: Zero-backend maintenance using **Firebase** for auth, database, and hosting.
-- **QR Verification System**: Cryptographically generated QR codes for secure gate entry/exit logging.
+## 🌟 Overview
+
+The **NBKRIST Hostel Portal** is a production-ready, full-stack serverless web application engineered to replace archaic paper-based hostel administration with a fast, transparent, and mobile-responsive digital hub.
+
+Built on the **JAMstack** philosophy, the portal operates without a dedicated backend server by leveraging **Firebase modular services** (Authentication, Cloud Firestore real-time listeners, and atomic transactions) backed by an Edge CDN (Netlify) and client-side route guards.
+
+### 🎯 Primary Capabilities
+- 🛏️ **Visual Bed Heatmap**: Real-time room vacancy visualization with atomic transaction-safe reservation to prevent double-booking.
+- 🎫 **Digital Outpass Engine**: Streamlined outpass request workflow with warden approvals and dynamically signed QR codes for gate check-in/out.
+- 🛂 **Dedicated Gate Kiosk & ID Checker**: Touch-friendly, high-contrast kiosk mode with camera QR scanning (`html5-qrcode`) and manual fallback.
+- 🍽️ **Smart Mess Schedule**: Automated 7-day meal schedule with countdown timers to the next meal and student satisfaction ratings.
+- 📝 **Complaint Resolution Hub**: Transparent ticketing for room, mess, Wi-Fi, and electrical maintenance with real-time status tracking.
+- 🪪 **Digital Student Identity Card**: Instant digital identification with barcode, secure verification QR, and photo flip view.
+- 🛡️ **Comprehensive Admin Suite**: Chart.js analytics, student directory management, bulk actions, user archival/restore, immutable audit trails, and EmailJS communication.
+
+---
+
+## 💡 Why NBKRIST Hostel Portal?
+
+Traditional hostel management relies on handwritten logbooks, paper outpass slips, physical bulletin boards, and manual room allocation ledgers. This creates inefficiencies, lost paperwork, delays at the security gate, and lack of accountability.
+
+| Challenge in Traditional Hostels | NBKRIST Hostel Portal Solution |
+| :--- | :--- |
+| **Paper Outpass Delays** | ⚡ Instant digital application, warden one-click approval, and sub-second QR code scan at the gate. |
+| **Double-Booking & Allotment Bias** | 🔒 Interactive room vacancy heatmap backed by **Firestore Transactions** to guarantee atomic room locks. |
+| **Lost or Damaged ID Cards** | 🪪 Web-based **Digital Student ID** accessible anywhere on smartphone with verifiable QR payload. |
+| **Unaddressed Complaints** | 📊 Transparent grievance redressal tracking (`Pending` ➔ `In Progress` ➔ `Resolved`). |
+| **Static & Forgotten Mess Timetables** | 🕒 Dynamic 7-day timetable that auto-highlights the current meal with a live countdown timer. |
+| **Manual Gate Logs & Night Bottlenecks** | 📱 Dedicated **Gate Kiosk** (`gate-kiosk.html`) optimized for low-light camera QR scanning with live security logs. |
+| **Server Maintenance Costs** | ☁️ **100% Serverless**: Zero cloud server costs, near-infinite scalability, and instantaneous Edge CDN delivery. |
 
 ---
 
