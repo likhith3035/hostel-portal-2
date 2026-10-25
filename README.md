@@ -216,92 +216,61 @@ flowchart TD
 
 ---
 
-## ✨ Highlights
+## 📊 Feature Matrix by Role
 
-<table>
-  <tr>
-    <td align="center" width="25%">
-      <h3>🎨</h3>
-      <b>Modern UI</b><br/>
-      <sub>Glassmorphism • Dark Mode<br/>Smooth Animations</sub>
-    </td>
-    <td align="center" width="25%">
-      <h3>⚡</h3>
-      <b>Real-Time</b><br/>
-      <sub>Cloud Firestore<br/>Instant Sync</sub>
-    </td>
-    <td align="center" width="25%">
-      <h3>🔒</h3>
-      <b>Secure</b><br/>
-      <sub>Role-Based Access<br/>Audit Logging</sub>
-    </td>
-    <td align="center" width="25%">
-      <h3>�</h3>
-      <b>Responsive</b><br/>
-      <sub>Mobile-First Design<br/>PWA Ready</sub>
-    </td>
-  </tr>
-</table>
+### 🎓 Student Portal
 
-### 🎨 Design Philosophy
-
-> *"Premium aesthetics meet practical functionality"*
-
-- **Glassmorphism Cards** — Frosted glass effect with backdrop blur
-- **Micro-Animations** — Subtle hover effects, transitions, and loading states
-- **Dark Mode** — Full dark/light theme toggle with system preference detection
-- **Interactive Elements** — Heatmaps, real-time charts, and dynamic QR codes
-- **Toast Notifications** — Non-intrusive, mobile-responsive feedback system
+| Feature | File | Description |
+| :--- | :--- | :--- |
+| **Real-Time Dashboard** | [`index.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/index.html) | Live summary of current meal countdown, recent notices, and personal complaint statuses. |
+| **Room Booking Heatmap** | [`booking.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/booking.html) | Interactive floor map showing live room & bed status (Available, Pending, Taken) with atomic booking. |
+| **Digital Outpass** | [`outpass.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/outpass.html) | Submit leave/outpass requests, view approval status, and display verified QR code for gate check. |
+| **7-Day Dynamic Mess Menu** | [`mess-menu.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/mess-menu.html) | Weekly meal calendar, automatic time-based meal highlighting, and interactive meal rating system. |
+| **Grievance Redressal** | [`complaints.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/complaints.html) | Submit tickets for electrical, plumbing, Wi-Fi, or food issues with real-time status updates. |
+| **Digital Identity Card** | [`id-card.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/id-card.html) | Official-style digital student ID with barcode, personal details, photo, and verification QR code. |
+| **Profile & Settings** | [`profile.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/profile.html) | Manage student bio, avatar, emergency contacts, room allocation details, and password security. |
+| **Campus Regulations** | [`rules.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/rules.html) | Official hostel timings, disciplinary policies, mess guidelines, and ragging prohibition protocols. |
 
 ---
 
-## 🚀 Features
+### 🛡️ Admin & Warden Command Center
 
-### 🎓 Student Module
-
-| Feature | Description |
-|---------|-------------|
-| 📊 **Dashboard** | Real-time overview of notices, complaints, and daily mess menu |
-| 🍽️ **Mess Menu** | View daily menus with time-based meal highlighting & ratings |
-| 🛏️ **Room Booking** | Interactive heatmap showing real-time room availability |
-| 🎫 **Outpass System** | Digital outpass application with QR code generation |
-| 📝 **Complaints** | Submit and track maintenance or other issues |
-| 🪪 **Digital ID** | Auto-generated digital identity card with QR verification |
-| 👤 **Profile** | Manage personal details, avatar, and settings |
-
-### 🛡️ Admin Module
-
-| Feature | Description |
-|---------|-------------|
-| 📈 **Analytics** | Visual insights with Chart.js — occupancy rates, complaint trends |
-| 👥 **User Management** | Search, filter, bulk actions, role assignment, archiving |
-| ✅ **Booking Approvals** | One-click approve/reject with Firestore transactions |
-| 🎫 **Outpass Control** | Review, approve, and clear outpass applications |
-| 📋 **Content Management** | Update mess menus, notices, and broadcast alerts |
-| 📧 **Email System** | Send emails to students directly via EmailJS |
-| 🗂️ **User Archive** | Soft-delete with restore capability |
-
-### 🛂 Gate / Security Module
-
-| Feature | Description |
-|---------|-------------|
-| 📱 **QR Verification** | Scan student outpasses and digital IDs instantly |
-| 🖥️ **Gate Kiosk** | Optimized full-screen interface for security personnel |
-| 📋 **Live Logs** | Real-time entry/exit tracking |
+| Feature | Location | Description |
+| :--- | :--- | :--- |
+| **Executive Analytics** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Real-time KPI cards, hostel occupancy donut chart, and complaint categories breakdown via **Chart.js**. |
+| **Room Allocation Control** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Review bed booking applications, execute atomic approve/reject decisions, and perform forced room vacates. |
+| **Outpass Approval Hub** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Filter outpasses by status (`pending`, `approved`, `expired`), approve requests, or revoke permissions. |
+| **Student Directory & Export** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Search, filter by branch/room, promote roles, and export complete student rosters to CSV. |
+| **User Archival & Restore** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Soft-delete student records into `deletedUsers` collection with complete one-click restoration. |
+| **Mess Menu Live Editor** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Modify daily breakfast, lunch, snacks, and dinner items with immediate propagation to all students. |
+| **Campus Broadcast Notices** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Publish critical alerts, notices, and announcements with date-based priority. |
+| **Email Communication** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Dispatch direct notifications and broadcast reminders to students using the integrated **EmailJS** service. |
+| **Gate Passcode Manager** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Manage and rotate gate kiosk access passcodes with persistent history tracking in `settings/gateKiosk`. |
+| **Immutable Audit Logs** | [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html) | Security log inspector tracking admin approvals, role adjustments, room vacates, and user modifications. |
 
 ---
 
-## 📸 Gallery
+### 🛂 Security & Gate Kiosk
 
-| **Student Dashboard** | **Room Booking** |
-|:---:|:---:|
-| <img src="assets/images/dashboard.png" alt="Student Dashboard" width="400"/> | <img src="assets/images/booking.png" alt="Room Booking" width="400"/> |
-| *Real-time notices & menu* | *Interactive campus map* |
+| Feature | Location | Description |
+| :--- | :--- | :--- |
+| **Gate Kiosk Interface** | [`gate-kiosk.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/gate-kiosk.html) | High-contrast, dark-mode terminal engineered for outdoor, night-time, and tablet/mobile gate operations. |
+| **PIN Lock Protection** | [`js/gate-kiosk.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/gate-kiosk.js) | Prevents unauthorized tampering; gate personnel authenticate using a centralized security passcode. |
+| **Camera QR Scanner** | [`gate-kiosk.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/gate-kiosk.html) | Instant QR barcode scanning leveraging `html5-qrcode` with live video stream overlay. |
+| **Public ID Checker** | [`id-checker.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/id-checker.html) | Lightweight standalone scanner to authenticate any student's digital identity card by QR or roll number. |
+| **Automatic Timestamping** | [`js/gate-kiosk.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/gate-kiosk.js) | Automatically logs exact check-out and check-in timestamps to Firestore upon successful verification. |
 
-| **Admin Panel** | **Mobile View** |
-|:---:|:---:|
-| <img src="assets/images/admin.png" alt="Admin Dashboard" width="400"/> | <img src="assets/images/mobile.png" alt="Mobile Responsive" width="400"/> |
-| *Comprehensive management* | *Fully responsive design* |
+---
+
+## 🎨 UI / UX Design Highlights
+
+The portal's visual architecture is crafted to feel like a modern native iOS/macOS application rather than an academic tool:
+
+- **Glassmorphism Design System**: Translucent frosted panels (`backdrop-blur-xl`), soft border reflections, and layered elevation shadows.
+- **Dynamic Theme Engine**: Persistent Dark Mode and Light Mode with system-preference auto-detection (`prefers-color-scheme`).
+- **Tactile Micro-Interactions**: Spring-click physics, floating animations, skeleton loaders during network latency, and non-blocking toast alerts.
+- **Mobile-First Layout**: Fully responsive fluid grid layouts tailored for smartphone screens, tablets, kiosks, and widescreen monitors.
+- **High-Accessibility Design**: High-contrast typography with [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) and semantic HTML5 structures.
 
 ---
 
