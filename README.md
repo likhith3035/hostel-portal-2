@@ -274,78 +274,119 @@ The portal's visual architecture is crafted to feel like a modern native iOS/mac
 
 ---
 
-## 🛠️ Tech Stack
-
-<table>
-  <tr>
-    <th align="left">Category</th>
-    <th align="left">Technology</th>
-  </tr>
-  <tr>
-    <td><b>🎨 Frontend</b></td>
-    <td>
-      <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" />
-      <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
-      <img src="https://img.shields.io/badge/Alpine.js-8BC0D0?style=flat-square&logo=alpine.js&logoColor=black" />
-      <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" />
-    </td>
-  </tr>
-  <tr>
-    <td><b>☁️ Backend</b></td>
-    <td>
-      <img src="https://img.shields.io/badge/Firebase_Auth-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-      <img src="https://img.shields.io/badge/Cloud_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-      <img src="https://img.shields.io/badge/Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
-    </td>
-  </tr>
-  <tr>
-    <td><b>📦 Libraries</b></td>
-    <td>
-      <img src="https://img.shields.io/badge/Chart.js-FF6384?style=flat-square&logo=chartdotjs&logoColor=white" />
-      <img src="https://img.shields.io/badge/SweetAlert2-8B5CF6?style=flat-square" />
-      <img src="https://img.shields.io/badge/FontAwesome-528DD7?style=flat-square&logo=fontawesome&logoColor=white" />
-      <img src="https://img.shields.io/badge/EmailJS-FC5C65?style=flat-square" />
-      <img src="https://img.shields.io/badge/QRCode.js-000?style=flat-square" />
-      <img src="https://img.shields.io/badge/html2canvas-4ECDC4?style=flat-square" />
-      <img src="https://img.shields.io/badge/Flatpickr-4A90D9?style=flat-square" />
-    </td>
-  </tr>
-</table>
-
----
-
-## 📂 Project Structure
+## 📁 Repository Structure
 
 ```bash
 hostel-portal-2/
 │
-├── 🔑 firebase-config.example.js   # ⬅️ Copy → firebase-config.js & add keys
-│
-├── 📄 index.html                    # Student Dashboard
-├── 📄 admin.html                    # Admin Control Panel
-├── 📄 login.html                    # Authentication Page
-├── 📄 booking.html                  # Room Booking (Heatmap)
-├── 📄 outpass.html                  # Outpass System (QR Codes)
-├── 📄 mess-menu.html                # Mess Menu & Ratings
-├── 📄 complaints.html               # Complaint System
-├── 📄 profile.html                  # Student Profile & Digital ID
-├── 📄 gate-kiosk.html               # Security Gate Interface
+├── 📄 index.html                    # Student Dashboard (notices, quick actions, today's menu)
+├── 📄 login.html                    # Unified Authentication (Login, Register, Password Reset)
+├── 📄 booking.html                  # Room Booking Interface with visual Bed Heatmap
+├── 📄 outpass.html                  # Digital Outpass Application & QR Code Generator
+├── 📄 mess-menu.html                # 7-Day Interactive Mess Timetable & Ratings
+├── 📄 complaints.html               # Student Complaint Registration & Status Tracker
+├── 📄 profile.html                  # Student Profile Management & Digital ID preview
+├── 📄 id-card.html                  # Dedicated Printable Digital ID Card with QR & Barcode
+├── 📄 id-checker.html               # Public Identity Verification Scanner
+├── 📄 gate-kiosk.html               # Security Gate Check-in/Check-out Kiosk Terminal
+├── 📄 admin.html                    # Enterprise Administrative Control Panel
+├── 📄 rules.html                    # Hostel Regulations & Timings Guide
+├── 📄 about.html                    # About NBKRIST Hostel Ecosystem
+├── 📄 contact.html                  # Campus Administration Contacts & Emergency Numbers
+├── 📄 developer.html                # Developer Portfolio & Technical Credits
+├── 📄 privacy.html                  # Data Privacy Policy
+├── 📄 terms.html                    # Terms of Service & Campus Disclaimers
+├── 📄 offline.html                  # PWA Offline Fallback Screen
+├── 📄 toast-demo.html               # Design System Toast Notification Demonstration
 │
 ├── 📁 js/
-│   ├── 📁 auth/                     # Auth handlers & guards
-│   ├── 📁 firebase/                 # Firebase SDK wrappers
-│   ├── 📁 core/                     # DB services & constants
-│   ├── 📁 security/                 # Encryption & audit utils
-│   ├── 📁 components/               # Reusable UI components
-│   ├── admin.js                     # Admin logic (80KB+)
-│   ├── booking.js                   # Room booking logic
-│   ├── outpass.js                   # Outpass logic
-│   └── mess-menu.js                 # Mess menu logic
+│   ├── main.js                      # Central Application Controller, Navigation & Global State
+│   ├── dashboard.js                 # Dashboard widgets, notice feeds & live stats
+│   ├── booking.js                   # Room booking logic & transaction wrappers
+│   ├── outpass.js                   # Outpass submission, validation & EmailJS triggers
+│   ├── complaints.js                # Grievance registration & status filter logic
+│   ├── mess-menu.js                 # Mess schedule renderer, live timer & rating handlers
+│   ├── profile.js                   # Profile updating, avatar upload & ID generation
+│   ├── admin.js                     # Complete Admin suite (Analytics, Users, Bookings, Logs)
+│   ├── gate-kiosk.js                # Gate security scanner, PIN protection & movement logs
+│   ├── id-checker.js                # ID card scanner & verification routines
+│   ├── id-card.js                   # ID card view renderer & barcode generator
+│   ├── clear-cache.js               # Service Worker & Cache management utility
+│   │
+│   ├── 📁 core/
+│   │   ├── constants.js             # Firestore collection names, status enums & config keys
+│   │   ├── db-service.js            # Standardized database query helpers & error abstractions
+│   │   ├── audit-service.js         # Security audit logging engine
+│   │   └── error-handler.js         # Global exception handling & UI toast alerts
+│   │
+│   ├── 📁 security/
+│   │   └── auth-guard.js            # Route protection, session verification & RBAC redirects
+│   │
+│   ├── 📁 components/
+│   │   ├── calendar.js              # Interactive date-picker & leave scheduler
+│   │   └── toast.js                 # Non-blocking glassmorphic toast notification component
+│   │
+│   ├── 📁 firebase/                 # Modular Firebase SDK distribution (ES Modules)
+│   │   ├── firebase-app.js          # Firebase App Core
+│   │   ├── firebase-auth.js         # Firebase Auth Modular SDK
+│   │   └── firebase-firestore.js    # Cloud Firestore Modular SDK
+│   │
+│   └── 📁 vendor/
+│       └── alpine.min.js            # Alpine.js reactive micro-framework
 │
-├── 📁 css/                          # Stylesheets
-├── 📁 assets/                       # Images & icons
-└── .gitignore
+├── 📁 css/
+│   └── style.css                    # Custom CSS tokens, glassmorphism utilities & animations
+│
+├── 📁 assets/
+│   └── 📁 images/                   # Brand logos, campus photography & icons
+│       ├── nbkrist-logo.png         # Main NBKRIST Emblem
+│       ├── nbkrist-logo-white.png   # Monochrome Transparent Logo
+│       ├── campus-login.jpg         # Campus Photography
+│       └── favicon.png              # Portal Favicon
+│
+├── 📁 icons/                        # PWA App Manifest Icons (64x64 to 512x512)
+│
+├── ⚙️ firebase.json                 # Firebase Hosting rewrites & Firestore schema deployment
+├── ⚙️ firestore.rules               # Enterprise Firestore Security Rules v2
+├── ⚙️ firestore.indexes.json        # Composite Query Indexes for high-speed queries
+├── ⚙️ firebase-config.js            # Active Firebase Environment Configuration
+├── ⚙️ firebase-config.example.js    # Firebase Config Template (Safe for Version Control)
+├── ⚙️ _redirects                    # Netlify SPA Clean URL Redirection Rules
+├── ⚙️ manifest.json                 # Progressive Web App (PWA) Manifest
+├── ⚙️ sw.js                         # Service Worker (Cache versioning & Offline Support)
+├── 📄 CACHE_CLEAR_GUIDE.md          # End-user & Developer Guide for cache invalidation
+├── 📄 LICENSE                       # MIT Open Source License
+└── 📄 README.md                     # Project Documentation
 ```
+
+---
+
+## 🔒 Database Schema & Security Architecture
+
+### Cloud Firestore Collections
+
+| Collection | Document Key | Primary Fields | Access Constraints |
+| :--- | :--- | :--- | :--- |
+| `users` | `userId` (Auth UID) | `name`, `email`, `role`, `studentId`, `room`, `phone`, `avatar` | Public read for ID verification; self-edit only; admin can manage. Role cannot be self-elevated. |
+| `bookings` | `userId` (Auth UID) | `userId`, `studentName`, `roomNumber`, `bedId`, `status`, `timestamp` | User can create & read their own booking; only Admin can approve/reject. |
+| `rooms` | `roomId` (e.g. `101`) | `roomNumber`, `gender`, `beds` (nested map of availability) | Public read for room browsing; Admin-only write. |
+| `outpasses` | Auto-generated ID | `userId`, `userName`, `destination`, `fromDate`, `toDate`, `status`, `qrData` | User can read/create own; Admin & Staff can update status (`approved`, `rejected`, `departed`). |
+| `complaints` | Auto-generated ID | `userId`, `studentName`, `category`, `title`, `description`, `status`, `timestamp` | User can read own; Staff can read all; Admin can change status. |
+| `messMenu` | Day name (e.g. `monday`) | `breakfast`, `lunch`, `snacks`, `dinner`, `lastUpdated` | Public read; Admin-only write. |
+| `mealRatings` | Auto-generated ID | `userId`, `mealType`, `rating` (`like` / `pass`), `date` | Authenticated students can create their own rating; read allowed for signed-in users. |
+| `notices` | Auto-generated ID | `title`, `content`, `date`, `priority`, `author` | Public read; Admin-only write. |
+| `notifications` | Auto-generated ID | `recipientId`, `title`, `message`, `readBy`, `timestamp` | Signed-in users can read notifications intended for them or broadcasts. |
+| `metadata` | `studentIdCounter` | `current` (Atomic integer counter for `NBKR-XXXX` IDs) | Public read; write strictly enforced to increment by exactly `+1`. |
+| `settings` | `gateKiosk` | `validPasswords` (Array of approved PIN codes), `updatedAt` | Authenticated kiosk & admins only; Admin-only write. |
+| `deletedUsers` | `userId` | Archived student profiles and deletion metadata | Admin-only read and write (Soft-delete & recovery archive). |
+| `audit_logs` | Auto-generated ID | `adminId`, `action`, `targetId`, `timestamp`, `details` | Admin-only read; signed-in users can append; updates/deletions **strictly forbidden**. |
+
+### Security Model Highlights
+
+1. **Role Immutability**: Firestore security rules prevent users from including or modifying the `role` attribute on their own profile. Only confirmed administrators can assign roles.
+2. **Atomic Counter Protection**: Student ID sequencing uses Firestore security rules verifying that any write to `metadata/studentIdCounter` strictly increases the `current` field by `1`, eliminating counter manipulation.
+3. **Immutable Audit Trails**: The `audit_logs` collection permits document creation by authenticated operations, but **denies all updates and deletions** (`allow update, delete: if false;`), ensuring complete forensic integrity.
+4. **Client-Side Auth Guards**: Restricted routes (`admin.html`, `profile.html`) load [`js/security/auth-guard.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/security/auth-guard.js) as the first module, executing pre-render authentication checks before showing protected content.
 
 ---
 
