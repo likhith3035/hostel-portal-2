@@ -390,201 +390,278 @@ hostel-portal-2/
 
 ---
 
-## ⚙️ Installation & Setup
+## 🚀 Quick Start & Local Setup
 
 ### Prerequisites
+- **Modern Web Browser**: Google Chrome, Firefox, Safari, or Microsoft Edge.
+- **Firebase Account**: Free Tier (Spark Plan) is fully sufficient — [Create Account](https://firebase.google.com/).
+- **Local Web Server**: VS Code Live Server, Node.js (`npx serve`), or Python (`python -m http.server`).
 
-| Requirement | Details |
-|-------------|---------|
-| 🔥 Firebase Account | Free tier works — [Sign up here](https://firebase.google.com/) |
-| 💻 Code Editor | VS Code recommended |
-| 🌐 Local Server | Live Server extension, Python, or Node.js |
+---
 
-### Step 1 — Clone
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/likhith3035/hostel-portal-2.git
 cd hostel-portal-2
 ```
 
-### Step 2 — Firebase Setup
+---
 
-1. Create a project at [Firebase Console](https://console.firebase.google.com/)
-2. Enable **Authentication** → Sign-in method → **Email/Password**
-3. Enable **Cloud Firestore** → Create database → **Test mode**
+### Step 2: Configure Firebase
 
-### Step 3 — Configure Keys
+1. Navigate to the [Firebase Console](https://console.firebase.google.com/) and click **Add Project**.
+2. **Enable Authentication**:
+   - Go to **Build** ➔ **Authentication** ➔ **Sign-in method**.
+   - Enable **Email/Password**.
+3. **Enable Cloud Firestore**:
+   - Go to **Build** ➔ **Firestore Database** ➔ **Create Database**.
+   - Choose your nearest cloud location and start in **Production mode**.
+4. **Copy the Configuration Template**:
+   ```bash
+   # Windows (PowerShell / Command Prompt)
+   copy firebase-config.example.js firebase-config.js
+
+   # Linux / macOS
+   cp firebase-config.example.js firebase-config.js
+   ```
+5. Open [`firebase-config.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/firebase-config.js) and paste your Web App credentials:
+   ```javascript
+   export const firebaseConfig = {
+     apiKey: "YOUR_API_KEY",
+     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+     projectId: "YOUR_PROJECT_ID",
+     storageBucket: "YOUR_PROJECT_ID.appspot.com",
+     messagingSenderId: "YOUR_SENDER_ID",
+     appId: "YOUR_APP_ID",
+     measurementId: "YOUR_MEASUREMENT_ID"
+   };
+   ```
+
+---
+
+### Step 3: Deploy Security Rules & Composite Indexes
+
+Deploy the battle-tested Firestore security rules and composite query indexes directly from your machine using the Firebase CLI:
 
 ```bash
-# Copy the example config
-cp firebase-config.example.js firebase-config.js        # Mac/Linux
-copy firebase-config.example.js firebase-config.js      # Windows
-```
+# Install Firebase CLI if not already installed
+npm install -g firebase-tools
 
-Open `firebase-config.js` and paste your Firebase keys:
+# Authenticate with your Google account
+firebase login
 
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",                    // ← from Firebase Console
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
-};
-```
+# Connect this repository to your Firebase project
+firebase use --add
 
-
-### Step 3.1 — EmailJS Setup (Optional)
-
-This project uses **EmailJS** for sending emails without a backend server.
-
-1.  Create an account at [EmailJS](https://www.emailjs.com/).
-2.  Create a **Service** (e.g., Gmail).
-3.  Create an **Email Template**.
-4.  Update the Public Key in `js/admin.js` and `js/outpass.js` where `emailjs.init()` is called.
-
-```javascript
-emailjs.init("YOUR_PUBLIC_KEY");
+# Deploy security rules and query indexes
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 ---
 
-### Step 4 — Launch
+### Step 4: Configure EmailJS (Optional)
 
-| Method | Command |
-|--------|---------|
-| 🟢 **VS Code** | Right-click `index.html` → Open with Live Server |
-| 🐍 **Python** | `python -m http.server 8000` |
-| 🟩 **Node.js** | `npx serve .` |
+The portal integrates with [EmailJS](https://www.emailjs.com/) to send transactional notifications without requiring a custom Node.js mail daemon.
 
-### Step 5 — Open
-
-Navigate to `http://localhost:8000` — You're all set! 🎉
+1. Create a free account at [EmailJS](https://www.emailjs.com/).
+2. Create an Email Service (e.g., connected to a Gmail or Outlook account).
+3. Create an Email Template with variables `{{to_name}}`, `{{subject}}`, and `{{message}}`.
+4. Update your Public Key in [`js/admin.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/admin.js) and [`js/outpass.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/outpass.js):
+   ```javascript
+   emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+   ```
 
 ---
 
-## 🚀 Deployment
+### Step 5: Designate Your Initial Administrator Account
 
-The easiest way to deploy this project is with **Netlify**.
+In accordance with [`firestore.rules`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/firestore.rules#L22-L27), an account is automatically granted full administrative authorization if:
+- The user's email is `admin@nbkrist.org`, `warden@nbkrist.org`, or `kamilikhith@gmail.com`.
+- **OR** the user's document in the `users` collection has the field `role: "admin"`.
 
-### Option 1: Drag & Drop (Recommended)
-1.  Go to [Netlify Drop](https://app.netlify.com/drop).
-2.  Drag the `hostel-portal-2` folder onto the page.
-3.  **Done!** Your site is live. 
+To bootstrap your admin access:
+1. Register a new student account via `login.html`.
+2. Go to **Firebase Console** ➔ **Firestore Database** ➔ **users** collection.
+3. Locate your user document (matched by your UID) and change the `role` field value from `"student"` to `"admin"`.
+4. Refresh your browser; you will now have unrestricted access to [`admin.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/admin.html)!
 
-> [!IMPORTANT]  
-> Remember to add your Netlify domain (e.g., `https://your-site.netlify.app`) to **Firebase Console → Authentication → Settings → Authorized Domains** to allow sign-ins.
+---
 
-### Option 2: Netlify CLI
+### Step 6: Launch Local Server
+
+Run any local HTTP server from the project root:
+
 ```bash
-npm install netlify-cli -g
+# Option A: Python 3
+python -m http.server 8000
+
+# Option B: Node.js (npx serve)
+npx serve .
+
+# Option C: VS Code
+# Install the "Live Server" extension, right-click index.html, and click "Open with Live Server"
+```
+
+Open `http://localhost:8000` in your web browser. 🎉
+
+---
+
+## 🌐 Production Deployment
+
+### Option 1: Netlify (Recommended)
+
+This repository includes a pre-configured [`_redirects`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/_redirects) file for clean URL handling on Netlify.
+
+#### Drag & Drop Method
+1. Navigate to [Netlify Drop](https://app.netlify.com/drop).
+2. Drag and drop the `hostel-portal-2` project folder directly onto the dropzone.
+3. Netlify will deploy your static assets in under 30 seconds!
+
+#### Netlify CLI Method
+```bash
+npm install -g netlify-cli
 netlify login
-netlify deploy --prod
+netlify deploy --prod --dir .
 ```
 
-### Option 3: Vercel / GitHub Pages
-- **Vercel**: Install Vercel CLI or import from GitHub.
-- **GitHub Pages**: Not recommended for this specific setup due to SPA routing with history API, but possible with configuration.
+> [!IMPORTANT]
+> **Authorize Your Production Domain**: In the [Firebase Console](https://console.firebase.google.com/), navigate to **Authentication** ➔ **Settings** ➔ **Authorized Domains**, and add your Netlify address (e.g. `your-site.netlify.app`) or custom domain. Firebase will reject login requests originating from unauthorized domains.
 
 ---
 
-## 🔮 Roadmap
+### Option 2: Firebase Hosting
 
-- [ ] **Push Notifications**: Real-time alerts for outpass approvals.
-- [ ] **Parent Portal**: Dedicated login for parents to view attendance and expenses.
-- [ ] **Payment Gateway**: Integration for hostel fee payments.
-- [ ] **AI Chatbot**: For answering common student queries regarding rules and mess.
+The repository includes a complete [`firebase.json`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/firebase.json) configuration with clean URL rewrites.
 
----
+```bash
+firebase deploy --only hosting
+```
 
-## ❓ Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| **White Screen / No Data** | Check your internet connection and ensure Firestore rules allow read access. |
-| **Login Fails** | Verify that you have created an account in the Authentication tab of Firebase Console. |
-| **Map Not Loading** | Ensure `booking.js` is correctly linked and your browser supports SVG rendering. |
+Your portal will be live at `https://YOUR_PROJECT_ID.web.app`!
 
 ---
 
-## 📈 Star History
+## 📱 Progressive Web App (PWA) & Cache Management
 
-<p align="center">
-  <a href="https://star-history.com/#likhith3035/hostel-portal-2&Date">
-    <img src="https://api.star-history.com/svg?repos=likhith3035/hostel-portal-2&type=Date" alt="Star History Chart" width="100%">
-  </a>
-</p>
+The portal includes an aggressive Service Worker implementation ([`sw.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/sw.js)) and web manifest ([`manifest.json`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/manifest.json)), enabling:
+- **Add to Home Screen**: Install the portal on Android, iOS, or Windows desktops as a standalone native-feeling application.
+- **Offline Fallback**: Network failures automatically route users to [`offline.html`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/offline.html).
+- **Automated Cache Invalidation**: When a new service worker version is deployed (e.g., `CACHE_NAME = 'hostel-portal-v31'`), the application auto-deletes obsolete caches and refreshes client sessions.
+
+### Manual Cache Reset Utility
+For users or administrators experiencing stale data, the portal includes [`js/clear-cache.js`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/js/clear-cache.js):
+```javascript
+// Run in the browser DevTools console to reset all storage
+clearAllCaches();
+```
+*(For complete details, see [`CACHE_CLEAR_GUIDE.md`](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/CACHE_CLEAR_GUIDE.md)).*
+
+---
+
+## ❓ Troubleshooting & FAQs
+
+<details>
+<summary><b>1. Firebase: "Missing or insufficient permissions" error</b></summary>
+<br/>
+This indicates that your Cloud Firestore security rules are blocking the operation. Ensure that you have deployed the provided rules using:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+Also verify that you are signed in and that your user role matches the required permission for that collection.
+</details>
+
+<details>
+<summary><b>2. "The query requires an index" error in the console</b></summary>
+<br/>
+Certain multi-field queries (e.g., ordering outpasses by <code>userId</code> and <code>timestamp</code>) require composite indexes. Deploy the included indexes by running:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+Alternatively, click the direct link provided in the Firebase browser console error message to generate the index with one click.
+</details>
+
+<details>
+<summary><b>3. Gate Kiosk camera scanner is not opening</b></summary>
+<br/>
+Modern browsers require a <b>Secure Context (HTTPS)</b> to grant access to the device camera. The camera scanner will work on <code>localhost</code> during development, but requires a valid SSL certificate (such as on Netlify or Firebase Hosting) in production. Ensure camera permissions are granted in the browser address bar.
+</details>
+
+<details>
+<summary><b>4. Changes to JavaScript or HTML are not showing up</b></summary>
+<br/>
+Because of the Progressive Web App service worker cache, perform a hard refresh:
+<ul>
+  <li><b>Windows / Linux:</b> <code>Ctrl + Shift + R</code></li>
+  <li><b>macOS:</b> <code>Cmd + Shift + R</code></li>
+  <li>Or execute <code>clearAllCaches()</code> in your browser console.</li>
+</ul>
+</details>
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] **Web Push Notifications**: Firebase Cloud Messaging (FCM) integration for real-time leave approvals and emergency sirens.
+- [ ] **Parental Attendance Portal**: Dedicated read-only view for parents to review attendance history, gate loggings, and fee statements.
+- [ ] **Automated Payment Gateway**: UPI / Razorpay integration for online hostel mess fee payments and caution deposit management.
+- [ ] **AI-Powered Campus Assistant**: Localized LLM bot to answer student questions regarding hostel curfew, mess menus, and leave policies.
+- [ ] **Biometric Hardware Sync**: Webhook bridge connecting physical RFID and fingerprint gate turnstiles to the Firestore movement log.
 
 ---
 
 ## 🤝 Contributing
 
+Contributions are welcomed from students, developers, and educators! Follow these steps:
 
-Contributions are welcome! Here's how:
-
-```bash
-# 1. Fork & Clone
-git clone https://github.com/YOUR_USERNAME/hostel-portal-2.git
-
-# 2. Create a branch
-git checkout -b feature/AmazingFeature
-
-# 3. Make your changes & commit
-git commit -m "Add some AmazingFeature"
-
-# 4. Push & open a PR
-git push origin feature/AmazingFeature
-```
-
----
-
-## ✨ Contributors
-
-<a href="https://github.com/likhith3035/hostel-portal-2/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=likhith3035/hostel-portal-2" alt="Contributors" />
-</a>
+1. **Fork the Repository** on GitHub.
+2. **Create a Feature Branch**:
+   ```bash
+   git checkout -b feature/dynamic-menu-filters
+   ```
+3. **Commit Your Changes** (adhering to conventional commit messages):
+   ```bash
+   git commit -m "feat(mess): add allergen filter to 7-day meal schedule"
+   ```
+4. **Push to Your Branch**:
+   ```bash
+   git push origin feature/dynamic-menu-filters
+   ```
+5. **Open a Pull Request** describing your additions and testing steps.
 
 ---
 
-## 👨‍💻 Developer
+## 👨‍💻 Developer & Institutional Credits
 
 <p align="center">
-  <b>Likhith Kami</b><br/>
-  <sub>NBKRIST — AI & Data Science Department</sub>
+  <b>Designed & Engineered by Likhith Kami</b><br/>
+  <sub>Department of Artificial Intelligence & Data Science</sub><br/>
+  <sub>NBKR Institute of Science and Technology (NBKRIST), Vidyanagar, Andhra Pradesh</sub>
 </p>
 
 <p align="center">
   <a href="https://github.com/likhith3035">
-    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" />
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
   </a>
+  &nbsp;
   <a href="https://www.linkedin.com/in/likhith-kami/">
-    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
   </a>
+  &nbsp;
   <a href="https://www.instagram.com/lucky__likhith?igsh=bTgxYjZtZ2wwYmR4">
-    <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" />
+    <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram" />
   </a>
-</p>
-
----
-
-<p align="center">
-  <sub>Built with ❤️ for NBKRIST Students</sub><br/><br/>
-  <img src="https://img.shields.io/badge/Made_with-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" />
-  <img src="https://img.shields.io/badge/Powered_by-Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-  <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" />
-</p>
-
-<p align="center">
-  <sub>⭐ Star this repo if you found it useful!</sub>
 </p>
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the terms of the **MIT License**. See the [LICENSE](file:///c:/Users/kamil/OneDrive/Desktop/hsp2%20backup/LICENSE) file for full details.
 
 ```text
 MIT License
@@ -609,3 +686,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ for the students of NBKRIST • If you find this project inspiring, please consider starring ⭐ the repository!</sub>
+</p>
